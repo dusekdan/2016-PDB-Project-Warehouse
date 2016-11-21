@@ -1,5 +1,6 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.controller.FXMLController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.LoginDialog;
 import java.util.Optional;
 import javafx.application.Application;
@@ -19,12 +20,20 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         
         db = new Database();
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/Scene.fxml"));
+        
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
+        
+        FXMLController controller = new FXMLController();
+        controller.setDb(db);
+        
+        Parent root = loader.load();
         
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
         
-        stage.setTitle("Simple demo window");
+        
+        stage.setTitle("Skladiště");
+        
         stage.setScene(scene);
         stage.show();
         
@@ -42,13 +51,7 @@ public class MainApp extends Application {
         System.out.println(user + " " + pass);
         db.setPasswd(pass);
         db.setUsername(user);
-        if (db.testConnection()) {
-            System.out.println("It works!");
-        }
-        else {
-            System.out.println("Doomed!");
-            System.exit(1);
-        }
+        
         
         
         

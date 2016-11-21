@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import oracle.jdbc.pool.OracleDataSource;
 
 /*
@@ -18,10 +20,13 @@ import oracle.jdbc.pool.OracleDataSource;
 public class Database {
 
     private Connection conn = null;
-
+    private Statement stmt = null;
+    private OracleDataSource ods = new OracleDataSource();
     private String username;
     private String passwd;
 
+    private boolean connected;
+    
     public void setPasswd(String passwd) {
         this.passwd = passwd;
     }
@@ -34,8 +39,37 @@ public class Database {
     
     
     
-    public Database() {
-
+    public Database() throws SQLException {
+            
+    }
+    
+    public void connect() throws SQLException {
+        ods.setUser(username);
+        ods.setPassword(passwd);
+        conn = ods.getConnection();
+        connected = true; 
+    }
+    
+    public boolean executeSQLFile(String filename) {
+        //TODO: not implemented
+        return false;
+    }
+    
+    public ResultSet executeQuery(String SQLQuery) throws SQLException {
+        if (!connected) {
+            try {
+                connect();
+            } catch (SQLException ex) {
+                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+                connected = false;
+                return null;
+                
+            }
+        }
+        
+        ResultSet res;
+        res = stmt.executeQuery(SQLQuery);
+        return res;
     }
 
     public boolean testConnection() throws Exception {
@@ -58,6 +92,7 @@ public class Database {
              *
              */
             // connect to the database
+            
             try (Connection conn = ods.getConnection()) {
                 // create a Statement
                 try (Statement stmt = conn.createStatement()) {
