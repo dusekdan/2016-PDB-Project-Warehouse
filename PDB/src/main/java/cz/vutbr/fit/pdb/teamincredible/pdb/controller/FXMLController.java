@@ -3,6 +3,7 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 import cz.vutbr.fit.pdb.teamincredible.pdb.Database;
 
 import java.net.URL;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -33,11 +34,31 @@ public class FXMLController implements Initializable {
         sqlQueryField.setText("");
 
 
+        ResultSet resultSet;
+
+
         try {
-            db.executeQuery(query);
+            System.out.print("Making a request... ");
+            resultSet = db.executeQuery(query);
+
+            if (resultSet != null)
+            {
+                System.out.print("Result is not null");
+                while (resultSet.next())
+                {
+                    String tableName = resultSet.getString(0);
+
+                    System.out.println(tableName);
+                }
+            }
+            else
+                System.out.print("Result is null");
         } catch (SQLException ex) {
+            System.out.print("aaaand it failed!");
             sqlConsole.appendText(ex.getSQLState());
         }
+
+
 
 
     }
