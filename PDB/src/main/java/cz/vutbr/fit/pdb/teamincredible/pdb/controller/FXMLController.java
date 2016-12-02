@@ -4,6 +4,7 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.Database;
 
 import java.net.URL;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -43,19 +44,25 @@ public class FXMLController implements Initializable {
 
             if (resultSet != null)
             {
+                StringBuilder builder = new StringBuilder();
                 System.out.print("Result is not null");
+                ResultSetMetaData rsmd = resultSet.getMetaData();
+                int nCols = rsmd.getColumnCount();
+
                 while (resultSet.next())
                 {
-                    String tableName = resultSet.getString(0);
+                    for (int i = 1;i<= nCols; i++) {
+                        builder.append(resultSet.getString(i));
 
-                    System.out.println(tableName);
+                    }
+                    sqlConsole.appendText(builder.toString());
                 }
             }
             else
                 System.out.print("Result is null");
         } catch (SQLException ex) {
             System.out.print("aaaand it failed!");
-            sqlConsole.appendText(ex.getSQLState());
+            sqlConsole.appendText(ex.getMessage());
         }
 
 
@@ -64,12 +71,7 @@ public class FXMLController implements Initializable {
     }
 
     public Database getDb() {
-
         return this.db;
-    }
-
-    public void setDb(Database db) {
-        this.db = db;
     }
 
     @Override
@@ -78,7 +80,6 @@ public class FXMLController implements Initializable {
     }
 
     public FXMLController() {
-        // TODO
         try {
             db = new Database();
         } catch (SQLException e) {

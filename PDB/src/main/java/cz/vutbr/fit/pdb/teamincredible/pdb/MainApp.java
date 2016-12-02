@@ -21,16 +21,16 @@ public class MainApp extends Application {
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
 
-        FXMLController controller = new FXMLController();
-
         Parent root = loader.load();
-        
+
+        FXMLController controller = loader.getController();
+
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
         
         
         stage.setTitle("Skladiště");
-        
+
         stage.setScene(scene);
         stage.show();
         
@@ -48,10 +48,9 @@ public class MainApp extends Application {
         System.out.println(user + " " + pass);
         controller.getDb().setPasswd(pass);
         controller.getDb().setUsername(user);
-        
+
         controller.getDb().testConnection();
-        
-        
+
         
     }
 

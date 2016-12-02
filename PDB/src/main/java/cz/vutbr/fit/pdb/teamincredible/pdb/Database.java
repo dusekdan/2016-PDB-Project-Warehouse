@@ -47,7 +47,6 @@ public class Database {
     }
     
     public ResultSet executeQuery(String SQLQuery) throws SQLException {
-        try {
             // create a OracleDataSource instance
             OracleDataSource ods = new OracleDataSource();
             ods.setURL("jdbc:oracle:thin:@//berta.fit.vutbr.cz:1526/pdb1");
@@ -72,17 +71,15 @@ public class Database {
                     // select something from the system's dual table
                     try (ResultSet rset = stmt.executeQuery(
                             SQLQuery)) {
+                        while (rset.next()) {
+                            System.err.println("col1: "+rset.getString(1));
+                        }
                         // iterate through the result and print the values
                         return rset;
                     } // close the ResultSet
                 } // close the Statement
             } // close the connection
-        } catch (SQLException sqlEx) {
-            System.err.println("SQLException: " + sqlEx.getMessage());
-        }
-        finally {
-            return null;
-        }
+
     }
 
     public boolean testConnection() throws Exception {
