@@ -14,18 +14,15 @@ import javafx.util.Pair;
 
 public class MainApp extends Application {
 
-    private Database db;
-    
+
     @Override
     public void start(Stage stage) throws Exception {
         
-        db = new Database();
-        
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-        
+
         FXMLController controller = new FXMLController();
-        controller.setDb(db);
-        
+
         Parent root = loader.load();
         
         Scene scene = new Scene(root);
@@ -49,10 +46,10 @@ public class MainApp extends Application {
         String pass = cred.get().getValue();
         
         System.out.println(user + " " + pass);
-        db.setPasswd(pass);
-        db.setUsername(user);
+        controller.getDb().setPasswd(pass);
+        controller.getDb().setUsername(user);
         
-        
+        controller.getDb().testConnection();
         
         
         

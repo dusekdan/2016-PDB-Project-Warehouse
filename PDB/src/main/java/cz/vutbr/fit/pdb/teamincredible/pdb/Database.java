@@ -19,9 +19,6 @@ import oracle.jdbc.pool.OracleDataSource;
  */
 public class Database {
 
-    private Connection conn = null;
-    private Statement stmt = null;
-    private OracleDataSource ods = new OracleDataSource();
     private String username;
     private String passwd;
 
@@ -40,15 +37,9 @@ public class Database {
     
     
     public Database() throws SQLException {
-            
+
     }
-    
-    public void connect() throws SQLException {
-        ods.setUser(username);
-        ods.setPassword(passwd);
-        conn = ods.getConnection();
-        connected = true; 
-    }
+
     
     public boolean executeSQLFile(String filename) {
         //TODO: not implemented
@@ -56,24 +47,46 @@ public class Database {
     }
     
     public ResultSet executeQuery(String SQLQuery) throws SQLException {
-        if (!connected) {
-            try {
-                connect();
-            } catch (SQLException ex) {
-                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
-                connected = false;
-                return null;
-                
-            }
+        try {
+            // create a OracleDataSource instance
+            OracleDataSource ods = new OracleDataSource();
+            ods.setURL("jdbc:oracle:thin:@//berta.fit.vutbr.cz:1526/pdb1");
+            /**
+             * *
+             * To set System properties, run the Java VM with the following at
+             * its command line: ... -Dlogin=LOGIN_TO_ORACLE_DB
+             * -Dpassword=PASSWORD_TO_ORACLE_DB ... or set the project
+             * properties (in NetBeans: File / Project Properties / Run / VM
+             * Options)
+             */
+            ods.setUser(username);
+            ods.setPassword(passwd);
+            /**
+             *
+             */
+            // connect to the database
+
+            try (Connection conn = ods.getConnection()) {
+                // create a Statement
+                try (Statement stmt = conn.createStatement()) {
+                    // select something from the system's dual table
+                    try (ResultSet rset = stmt.executeQuery(
+                            SQLQuery)) {
+                        // iterate through the result and print the values
+                        return rset;
+                    } // close the ResultSet
+                } // close the Statement
+            } // close the connection
+        } catch (SQLException sqlEx) {
+            System.err.println("SQLException: " + sqlEx.getMessage());
         }
-        
-        ResultSet res;
-        res = stmt.executeQuery(SQLQuery);
-        return res;
+        finally {
+            return null;
+        }
     }
 
     public boolean testConnection() throws Exception {
-        System.out.println("*** Connecting to the Oracle db. and running a simple query ***");
+        System.err.println("*** Connecting to the Oracle db. and running a simple query ***");
         try {
             // create a OracleDataSource instance
             OracleDataSource ods = new OracleDataSource();
@@ -101,7 +114,7 @@ public class Database {
                             "select 1+2 as col1, 3-4 as col2 from dual")) {
                         // iterate through the result and print the values
                         while (rset.next()) {
-                            System.out.println("col1: '" + rset.getString(1)
+                            System.err.println("col1: '" + rset.getString(1)
                                     + "'\tcol2: '" + rset.getString(2) + "'");
                         }
                     } // close the ResultSet
