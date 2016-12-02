@@ -75,6 +75,8 @@ public class FXMLController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        // Check whether database already contains our objects -> then color the canvas
+
     }
 
     public FXMLController() {
