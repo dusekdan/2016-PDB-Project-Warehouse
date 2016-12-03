@@ -1,6 +1,7 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.controller.FXMLController;
+import cz.vutbr.fit.pdb.teamincredible.pdb.controller.SQLController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.LoginDialog;
 
 import java.io.BufferedReader;
@@ -28,16 +29,17 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SQL.fxml"));
         Parent root = loader.load();
+        SQLController controller = loader.getController();
 
-        FXMLController controller = loader.getController();
+
+        FXMLLoader base = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
+        root = base.load();
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
-        
-        
+
         stage.setTitle("Skladiště");
 
         stage.setScene(scene);

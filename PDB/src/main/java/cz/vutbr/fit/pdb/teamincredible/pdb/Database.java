@@ -71,9 +71,6 @@ public class Database {
                     // select something from the system's dual table
                     try (ResultSet rset = stmt.executeQuery(
                             SQLQuery)) {
-                        while (rset.next()) {
-                            System.err.println("col1: "+rset.getString(1));
-                        }
                         // iterate through the result and print the values
                         return rset;
                     } // close the ResultSet
