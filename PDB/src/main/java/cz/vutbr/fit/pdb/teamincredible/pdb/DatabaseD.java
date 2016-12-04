@@ -127,9 +127,9 @@ public class DatabaseD {
                 {
                     System.out.println("Adding entity...");
                     Goods entity = new Goods();
-                    entity.setId(resultSet.getInt(0));
-                    entity.setTitle(resultSet.getString(2));
-                    entity.setPicture(resultSet.getString(3));
+                    entity.setId(resultSet.getInt(1));  // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, yeah)
+                    entity.setTitle(resultSet.getString(3));
+                    entity.setPicture(resultSet.getString(4));
                     //entity.setCount(); // TODO: this could be a problem
                     // TODO: Set column types accordingly, so this checks out with reality
                     entities.add(entity);
