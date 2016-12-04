@@ -12,16 +12,48 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.model;
 public class Goods {
 
     private String title;
+    public void setTitle(String newTitle)
+    {
+        title = newTitle;
+    }
+    public String getTitle()
+    {
+        return title;
+    }
+
     private String picture;
+    public void setPicture(String newPicture)
+    {
+        picture = newPicture;
+    }
     
     private String description;
-    
+    public void setDescription(String newDescription)
+    {
+        description = newDescription;
+    }
+
     private int id;
+    public void setId(int newId)
+    {
+        id = newId;
+    }
+    public int getId()
+    {
+        return id;
+    }
     
     private int count;
-    
+    public void setCount(int newCount)
+    {
+        count = newCount;
+    }
         
     private int size;
+    public void setSize(int newSize)
+    {
+        size = newSize;
+    }
     
     public int getSize() {
         return size; 

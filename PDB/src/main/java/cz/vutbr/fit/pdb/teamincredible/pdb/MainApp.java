@@ -1,60 +1,63 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
-import cz.vutbr.fit.pdb.teamincredible.pdb.controller.FXMLController;
-import cz.vutbr.fit.pdb.teamincredible.pdb.controller.SQLController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.LoginDialog;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.util.Optional;
-import javafx.application.Application;
-import static javafx.application.Application.launch;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.shape.Line;
-import javafx.stage.Stage;
-import javafx.util.Pair;
 
 
 public class MainApp extends Application {
-
 
     private String userName;
     private String password;
 
     @Override
     public void start(Stage stage) throws Exception {
-        
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SQL.fxml"));
-        Parent root = loader.load();
-        SQLController controller = loader.getController();
+        EnsureDatabaseCredentials();
+
+        // Establish connection to database
+        DatabaseD.setUserName(userName);
+        DatabaseD.setPassword(password);
+        DatabaseD.init();
 
 
+        // Load FXML layout
         FXMLLoader base = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-        root = base.load();
+        Parent root = base.load();
 
+        // Display Scene
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
-
         stage.setTitle("Skladiště");
-
         stage.setScene(scene);
         stage.show();
-        
+    }
+
+    @Override
+    public void stop() throws Exception{
+        DatabaseD.closeConnection();
+    }
+
+    private void EnsureDatabaseCredentials()
+    {
         LoginDialog dialog = new LoginDialog();
 
-        // Check whether previously used credentials are stored
         if(AreCredentialsPresent())
         {
             ExtractCredentialsFromConfig();
         }
         else
         {
-
+            // Get credentials for database from logon dialog
             Optional<Pair<String, String>> cred = dialog.showAndWait();
 
             while (!cred.isPresent()) {
@@ -63,16 +66,7 @@ public class MainApp extends Application {
 
             userName = cred.get().getKey();
             password = cred.get().getValue();
-
         }
-
-        System.out.println(userName + ":" + password);
-        controller.getDb().setPasswd(password);
-        controller.getDb().setUsername(userName);
-
-        controller.getDb().testConnection();
-
-        
     }
 
     private void ExtractCredentialsFromConfig()
