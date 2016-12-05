@@ -1,15 +1,13 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
-import cz.vutbr.fit.pdb.teamincredible.pdb.Database;
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
-import cz.vutbr.fit.pdb.teamincredible.pdb.model.Goods;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
 import java.net.URL;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -29,8 +27,8 @@ public class ActionsController implements Initializable{
             System.out.println("Connection is NOT working...");
 
         // Check out how can I select something
-        List<Goods> goods = DatabaseD.GetGoods();
-        for (Goods good : goods)
+        List<Good> goods = DatabaseD.GetGoods();
+        for (Good good : goods)
         {
             System.out.println("Id:" + good.getId());
             System.out.println("Name: " + good.getTitle());

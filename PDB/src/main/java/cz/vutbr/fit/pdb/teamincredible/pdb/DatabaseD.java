@@ -1,6 +1,6 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
-import cz.vutbr.fit.pdb.teamincredible.pdb.model.Goods;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import oracle.jdbc.pool.OracleDataSource;
 import tsql2lib.TSQL2Adapter;
 import tsql2lib.TSQL2Types;
@@ -113,9 +113,9 @@ public class DatabaseD {
         }
     }*/
 
-    public static List<Goods> GetGoods()
+    public static List<Good> GetGoods()
     {
-        List<Goods> entities = new ArrayList<>();
+        List<Good> entities = new ArrayList<>();
 
         try (Connection connection = dataSource.getConnection())
         {
@@ -129,7 +129,7 @@ public class DatabaseD {
                 while (resultSet.next())
                 {
                     System.out.println("Adding entity...");
-                    Goods entity = new Goods();
+                    Good entity = new Good();
                     entity.setId(resultSet.getInt(1));  // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, yeah)
                     entity.setTitle(resultSet.getString(3));
                     entity.setPicture(resultSet.getString(4));

@@ -7,9 +7,9 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.model;
 
 /**
  *
- * @author Sucha
+ * @author Dan
  */
-public class Goods {
+public class Good {
 
     private String title;
     public void setTitle(String newTitle)
@@ -63,10 +63,10 @@ public class Goods {
         return size*count;
     }
     
-    public Goods() {
+    public Good() {
     }
 
-    public Goods(String title, String picture, String description, int id, int count, int size) {
+    public Good(String title, String picture, String description, int id, int count, int size) {
         this.title = title;
         this.picture = picture;
         this.description = description;
