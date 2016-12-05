@@ -110,5 +110,12 @@
             <artifactId>jdbc7</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>tsql2lib</groupId>
+            <artifactId>tsql2</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/tsql2lib.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>

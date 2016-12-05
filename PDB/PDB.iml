@@ -12,5 +12,14 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: oracle.jdbc:jdbc7:1.0" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: tsql2lib:tsql2:1.0">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/tsql2lib.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

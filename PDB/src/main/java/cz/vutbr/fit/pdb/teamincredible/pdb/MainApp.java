@@ -13,11 +13,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
 
+import tsql2lib.parser.TSQL2ParserAdapter;
 
 public class MainApp extends Application {
 
     private String userName;
     private String password;
+
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -28,7 +30,7 @@ public class MainApp extends Application {
         DatabaseD.setUserName(userName);
         DatabaseD.setPassword(password);
         DatabaseD.init();
-
+        DatabaseD.initDBStruct();
 
         // Load FXML layout
         FXMLLoader base = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
