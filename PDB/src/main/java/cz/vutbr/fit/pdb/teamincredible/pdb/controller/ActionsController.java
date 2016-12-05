@@ -1,12 +1,17 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.Database;
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Goods;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.net.URL;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -32,6 +37,22 @@ public class ActionsController implements Initializable{
         }
 
 
+
+    }
+
+    public void importTestDB(ActionEvent actionEvent) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Reset databáze");
+        confirm.setHeaderText("Opravdu chcete obnovit data?");
+        confirm.setContentText("Touto akcí smažete všechna aktuální data, databáze se vyčistí a nahraje se modelový příklad.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.get() == ButtonType.OK) {
+            DatabaseD.initDBStruct();
+            // DatabaseD.loadInitData  TODO: create model data
+        }else {
+
+        }
 
     }
 }

@@ -30,7 +30,6 @@ public class MainApp extends Application {
         DatabaseD.setUserName(userName);
         DatabaseD.setPassword(password);
         DatabaseD.init();
-        DatabaseD.initDBStruct();
 
         // Load FXML layout
         FXMLLoader base = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
