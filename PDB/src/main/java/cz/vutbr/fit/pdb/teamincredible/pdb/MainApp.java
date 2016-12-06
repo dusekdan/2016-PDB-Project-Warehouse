@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
 
-import tsql2lib.parser.TSQL2ParserAdapter;
 
 public class MainApp extends Application {
 

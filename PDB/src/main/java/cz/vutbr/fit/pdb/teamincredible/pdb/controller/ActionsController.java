@@ -48,6 +48,11 @@ public class ActionsController implements Initializable{
         if (result.get() == ButtonType.OK) {
             DatabaseD.initDBStruct();
             // DatabaseD.loadInitData  TODO: create model data
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Úspěch");
+            info.setContentText("Databáze obnovena");
+            info.showAndWait();
+            
         }else {
 
         }

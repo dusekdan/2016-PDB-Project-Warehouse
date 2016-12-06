@@ -1,10 +1,11 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
+import cz.vutbr.fit.tsql2lib.TSQL2Adapter;
+import cz.vutbr.fit.tsql2lib.TSQL2Types;
+import cz.vutbr.fit.tsql2lib.TypeMapper;
 import oracle.jdbc.pool.OracleDataSource;
-import tsql2lib.TSQL2Adapter;
-import tsql2lib.TSQL2Types;
-import tsql2lib.TypeMapper;
+
 
 import java.sql.*;
 import java.util.ArrayList;

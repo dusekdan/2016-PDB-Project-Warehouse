@@ -26,7 +26,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="PDBintellij" target="1.7" />
+      <module name="PDBintellij" target="1.8" />
+      <module name="tsql2lib" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
