@@ -13,6 +13,7 @@ import java.io.File;
 
 /**
  * Created by Dan on 12/7/2016.
+ * Definition of AddGoodDialog and related functionality and constants
  */
 public class AddGoodDialog extends Dialog<Good>
 {
