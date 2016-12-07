@@ -5,9 +5,10 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="176.0" prefWidth="410.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="176.0" prefWidth="410.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController">
     <children>
         <Button fx:id="btnImportDB" layoutX="312.0" layoutY="16.0" mnemonicParsing="false" onAction="#importTestDB" text="Importovat testovací databázi" AnchorPane.rightAnchor="10.0" />
         <Label layoutX="22.0" layoutY="20.0" prefHeight="17.0" prefWidth="98.0" text="Stav databáze" AnchorPane.leftAnchor="20.0" />
         <Canvas fx:id="cnvDbImported" height="13.0" layoutX="113.0" layoutY="22.0" width="61.0" AnchorPane.leftAnchor="120.0" />
+      <Button onAction="#addGoodType" layoutX="14.0" layoutY="137.0" mnemonicParsing="false" text="Přidat typ zboží" />
     </children></AnchorPane>

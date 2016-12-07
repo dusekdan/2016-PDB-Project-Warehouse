@@ -2,15 +2,19 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
+import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodDialog;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+
 
 /**
  * Created by Dan on 03.12.2016.
@@ -31,9 +35,27 @@ public class ActionsController implements Initializable{
         for (Good good : goods)
         {
             System.out.println("Id:" + good.getId());
-            System.out.println("Name: " + good.getTitle());
+            System.out.println("Name: " + good.getName());
         }
 
+
+
+    }
+
+
+    public void addGoodType(ActionEvent actionEvent)
+    {
+
+        AddGoodDialog addDialog = new AddGoodDialog();
+
+        Optional<Good> goodValue = addDialog.showAndWait();
+
+
+
+
+
+
+        System.out.println("Something pressed in add goods dialog...");
 
 
     }

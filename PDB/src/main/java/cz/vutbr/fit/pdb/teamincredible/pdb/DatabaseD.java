@@ -4,12 +4,14 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.tsql2lib.TSQL2Adapter;
 import cz.vutbr.fit.tsql2lib.TSQL2Types;
 import cz.vutbr.fit.tsql2lib.TypeMapper;
+import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.pool.OracleDataSource;
-
+import oracle.ord.im.OrdImage;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Created by Dan on 12/2/2016.
@@ -93,27 +95,6 @@ public class DatabaseD {
     }
 
 
-    /*public static ResultSet ExecuteSQLQuery(String SQLQuery) throws SQLException
-    {
-        List<Object> result = new ArrayList<>();
-
-        try (Connection connection = dataSource.getConnection())
-        {
-            try (
-                    PreparedStatement statement = connection.prepareStatement(SQLQuery);
-                    ResultSet resultSet = statement.executeQuery();
-            )
-            {
-                int columnCount = resultSet.getMetaData().getColumnCount();
-                while (resultSet.next())
-                {
-
-                }
-
-            }
-        }
-    }*/
-
     public static List<Good> GetGoods()
     {
         List<Good> entities = new ArrayList<>();
@@ -124,7 +105,7 @@ public class DatabaseD {
             try (
                     PreparedStatement statement = connection.prepareStatement("SELECT * FROM Goods");
                     ResultSet resultSet = statement.executeQuery();
-                    )
+            )
             {
                 System.out.println("Second try...");
                 while (resultSet.next())
@@ -132,8 +113,8 @@ public class DatabaseD {
                     System.out.println("Adding entity...");
                     Good entity = new Good();
                     entity.setId(resultSet.getInt(1));  // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, yeah)
-                    entity.setTitle(resultSet.getString(3));
-                    entity.setPicture(resultSet.getString(4));
+                    entity.setName(resultSet.getString(3));
+                    //entity.setPhoto(resultSet.getString(4));
                     //entity.setCount(); // TODO: this could be a problem
                     // TODO: Set column types accordingly, so this checks out with reality
                     entities.add(entity);
@@ -218,7 +199,7 @@ public class DatabaseD {
 
 
 
-           stmtTSQL.execute("CREATE TABLE rack_goods (\n" +
+            stmtTSQL.execute("CREATE TABLE rack_goods (\n" +
                     "racks_id " +TypeMapper.get(TSQL2Types.INT)+ " NOT NULL,\n" +
                     "goods_id " +TypeMapper.get(TSQL2Types.INT)+ " NOT NULL,\n" +
                     "rack_goods_count " +TypeMapper.get(TSQL2Types.INT)+ ",\n" +
