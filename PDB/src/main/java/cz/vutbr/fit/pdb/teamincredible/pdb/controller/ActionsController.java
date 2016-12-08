@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 
 /**
  * Created by Dan on 03.12.2016.
+ * Definitions related to Actions tab
  */
 public class ActionsController implements Initializable{
 
