@@ -10,3 +10,10 @@
 .text-area .content {
     -fx-background-color: #000000;    
 }
+
+.storeAnchorPane {
+    -fx-border-color: black;
+    -fx-border-style: solid;
+    -fx-border-radius: 2%;
+    -fx-padding: 10dppx;
+}
