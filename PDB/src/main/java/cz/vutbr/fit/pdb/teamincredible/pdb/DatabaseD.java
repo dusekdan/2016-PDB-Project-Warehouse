@@ -206,15 +206,22 @@ public class DatabaseD {
                     "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id)\n" +
                     ") AS TRANSACTION TIME;\n"
             );
-            
-            stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_rack" +
+           
+   /*         stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_rack" +
                          "  FOREIGN KEY (racks_id)" +
                          "  REFERENCES racks(racks_id)");
+            System.out.println("alter1");
             
-            stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_goods\n" +
-                         "  FOREIGN KEY (goods_id)\n" +
+            stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_goods" +
+                         "  FOREIGN KEY (goods_id)" +
                          "  REFERENCES goods(goods_id);");
-
+            System.out.println("alter2");
+            
+            stmt.execute("ALTER TABLE racks ADD CONSTRAINT fk_racks_type_rack_defs" +
+                         "  FOREIGN KEY (racks_type)" +
+                         "  REFERENCES rack_definitions(rack_defs_id);");
+            System.out.println("alter3");
+*/
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }

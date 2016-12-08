@@ -14,7 +14,6 @@
           <TableColumn fx:id="action" prefWidth="${goodsTableView.width*0.1}" text="Akce" />
           <TableColumn fx:id="count" prefWidth="${goodsTableView.width*0.1}" text="Počet" />
           <TableColumn fx:id="date" prefWidth="${goodsTableView.width*0.1}" text="Datum" />
-          <TableColumn fx:id="detail" prefWidth="${goodsTableView.width*0.5}" text="Detail zboží" />
         </columns>
       </TableView>
     </children>
