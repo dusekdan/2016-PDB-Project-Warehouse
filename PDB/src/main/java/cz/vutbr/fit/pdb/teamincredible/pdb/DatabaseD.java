@@ -137,10 +137,8 @@ public class DatabaseD {
     public static void initDBStruct() {
         //  https://github.com/rychly/tsql2lib/blob/master/tsql2sample/src/main/java/cz/vutbr/fit/tsql2sample/App.java
         Statement stmt = null;
-        Statement stmtTSQL = null;
         try {
             stmt =  DatabaseD.getConnection().createStatement();
-            stmtTSQL = new TSQL2Adapter(DatabaseD.getConnection()).createStatement();
             try {
                 stmt.execute("DROP TABLE racks CASCADE CONSTRAINTS");
             } catch (SQLException e) {
@@ -157,7 +155,7 @@ public class DatabaseD {
                 System.err.println(e.getMessage());
             }
             try {
-                stmtTSQL.execute("DROP TABLE rack_goods CASCADE CONSTRAINTS");
+                stmt.execute("DROP TABLE rack_goods CASCADE CONSTRAINTS");
             } catch (SQLException e) {
                 System.err.println(e.getMessage());
             }
@@ -199,29 +197,31 @@ public class DatabaseD {
 
 
 
-            stmtTSQL.execute("CREATE TABLE rack_goods (\n" +
-                    "racks_id " +TypeMapper.get(TSQL2Types.INT)+ " NOT NULL,\n" +
-                    "goods_id " +TypeMapper.get(TSQL2Types.INT)+ " NOT NULL,\n" +
-                    "rack_goods_count " +TypeMapper.get(TSQL2Types.INT)+ ",\n" +
-                    "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id)\n" +
-                    ") AS TRANSACTION TIME;\n"
+            stmt.execute("CREATE TABLE rack_goods (" +
+                    "racks_id NUMBER(10) NOT NULL," +
+                    "goods_id NUMBER(10) NOT NULL," +
+                    "rack_goods_count NUMBER(32) NOT NULL," +
+                    "valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,"+
+                    "valid_to TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,"+
+                    "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id)" +
+                    " )"
             );
-           
-   /*         stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_rack" +
+          
+          stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_rack" +
                          "  FOREIGN KEY (racks_id)" +
                          "  REFERENCES racks(racks_id)");
             System.out.println("alter1");
             
             stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_goods" +
                          "  FOREIGN KEY (goods_id)" +
-                         "  REFERENCES goods(goods_id);");
+                         "  REFERENCES goods(goods_id)");
             System.out.println("alter2");
             
             stmt.execute("ALTER TABLE racks ADD CONSTRAINT fk_racks_type_rack_defs" +
                          "  FOREIGN KEY (racks_type)" +
-                         "  REFERENCES rack_definitions(rack_defs_id);");
+                         "  REFERENCES rack_definitions(rack_defs_id)");
             System.out.println("alter3");
-*/
+
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
