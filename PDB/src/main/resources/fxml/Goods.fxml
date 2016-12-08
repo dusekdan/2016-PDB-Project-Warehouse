@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.GoodsController">
     <children>
-        <Pagination layoutY="330.0" prefHeight="0.0" prefWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" />
-        <ListView prefHeight="0.0" prefWidth="0.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
-    </children></AnchorPane>
+      <TableView fx:id="goodsTableView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+          
+        <columns>
+          <TableColumn fx:id="goodsID" prefWidth="${goodsTableView.width*0.1}" text="Zboží" />
+          <TableColumn fx:id="stockID" prefWidth="${goodsTableView.width*0.1}" text="Umístění" />
+          <TableColumn fx:id="action" prefWidth="${goodsTableView.width*0.1}" text="Akce" />
+          <TableColumn fx:id="count" prefWidth="${goodsTableView.width*0.1}" text="Počet" />
+          <TableColumn fx:id="date" prefWidth="${goodsTableView.width*0.1}" text="Datum" />
+          <TableColumn fx:id="detail" prefWidth="${goodsTableView.width*0.5}" text="Detail zboží" />
+        </columns>
+      </TableView>
+    </children>
+</AnchorPane>

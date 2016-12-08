@@ -6,7 +6,7 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodDialog;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
+
 import javafx.scene.control.ButtonType;
 
 import java.net.URL;
@@ -50,14 +50,9 @@ public class ActionsController implements Initializable{
 
         Optional<Good> goodValue = addDialog.showAndWait();
 
-
-
-
-
-
         System.out.println("Something pressed in add goods dialog...");
 
-
+        
     }
 
     public void importTestDB(ActionEvent actionEvent) {

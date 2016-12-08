@@ -206,11 +206,21 @@ public class DatabaseD {
                     "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id)\n" +
                     ") AS TRANSACTION TIME;\n"
             );
+            
+            stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_rack" +
+                         "  FOREIGN KEY (racks_id)" +
+                         "  REFERENCES racks(racks_id)");
+            
+            stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_goods\n" +
+                         "  FOREIGN KEY (goods_id)\n" +
+                         "  REFERENCES goods(goods_id);");
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
+    
+    
 
     public DatabaseD(){}
 }
