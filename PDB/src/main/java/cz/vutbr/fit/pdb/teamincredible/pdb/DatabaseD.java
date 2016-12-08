@@ -1,13 +1,16 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
+import com.sun.deploy.security.WIExplorerSigningCertStore;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.tsql2lib.TSQL2Adapter;
 import cz.vutbr.fit.tsql2lib.TSQL2Types;
 import cz.vutbr.fit.tsql2lib.TypeMapper;
 import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.pool.OracleDataSource;
 import oracle.ord.im.OrdImage;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +95,214 @@ public class DatabaseD {
             System.out.println("User name or password to database must not be null.");
             return false;
         }
+    }
+
+
+    /*
+     * Good record insertion, update and modification section
+     */
+
+    public static boolean InsertGood(Good good)
+    {
+        // One connection for the whole insertion logic
+        Connection conn = getConnection();
+
+        boolean isInsertedBase = false;
+        int affectedRowId; // Serves as identification of the record to be further updated with SI_* functions
+
+
+        // Insert basic values
+        try {
+            // Configure connection not to autocommit
+            conn.setAutoCommit(false);
+
+            affectedRowId = InsertGoodBase(good, conn);
+            if (affectedRowId != -1)
+                isInsertedBase = true;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Unable to save basic part to database. Message: " + e.getMessage());
+            return false;
+        }
+
+        InsertGoodMediaPart(conn, affectedRowId, good);
+
+        try {
+            conn.commit();
+            conn.setAutoCommit(true);
+        }
+        catch (Exception e)
+        {
+            System.out.println("Failed to insert Good record to the database. Message: " + e.getMessage());
+            return false;
+        }
+
+        return isInsertedBase;
+    }
+
+    private static boolean InsertGoodMediaPart(Connection conn, int affectedRowId, Good good)
+    {
+        OrdImage imgProxy = null;
+
+        // Insert the media data
+        try(OraclePreparedStatement selectStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "SELECT GOODS_PHOTO FROM GOODS WHERE GOODS_ID = ? FOR UPDATE")){
+
+            // Pass ID of newly inserted row to SELECT statement parameter
+            selectStatement.setInt(1, affectedRowId);
+
+            // Prepare file content to be saved to database
+            imgProxy = LoadImageFromFile(conn, good.getImgFilePath(), selectStatement);
+
+            if (!SaveImageToDatabase(conn, imgProxy, affectedRowId))
+                return false;
+
+            if (!CreateImageFeatures(conn, affectedRowId))
+                return false;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Unable to save media part to database. Message: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean CreateImageFeatures(Connection conn, int affectedRowId)
+    {
+        // Prepare basic record for features
+        try(OraclePreparedStatement featuresStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "UPDATE GOODS G SET G.GOODS_PHOTO_SI = SI_StillImage(G.GOODS_PHOTO.getContent()) WHERE GOODS_ID = ?")) {
+            featuresStatement.setInt(1, affectedRowId);
+            featuresStatement.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Creation of basic feature image failed. Message: " + e.getMessage());
+            return false;
+        }
+
+        // Create features and store them in database
+        try(OraclePreparedStatement featureExtractionStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "UPDATE GOODS SET "
+                        + "GOODS_PHOTO_AC = SI_AverageColor(GOODS_PHOTO_SI), "
+                        + "GOODS_PHOTO_CH = SI_ColorHistogram(GOODS_PHOTO_SI), "
+                        + "GOODS_PHOTO_PC = SI_PositionalColor(GOODS_PHOTO_SI), "
+                        + "GOODS_PHOTO_TX = SI_Texture(GOODS_PHOTO_SI) "
+                        + "WHERE GOODS_ID = ?")){
+            featureExtractionStatement.setInt(1, affectedRowId);
+            featureExtractionStatement.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Creation of features failed. Message: " + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+
+    private static boolean SaveImageToDatabase(Connection conn, OrdImage imageProxy, int itemId)
+    {
+        try(OraclePreparedStatement updateStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "UPDATE GOODS SET GOODS_PHOTO = ? WHERE GOODS_ID = ?")) {
+            updateStatement.setORAData(1, imageProxy);
+            updateStatement.setInt(2, itemId);
+            updateStatement.executeUpdate();
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error occurred during saving image to database. Message: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static OrdImage LoadImageFromFile(Connection conn, String path, OraclePreparedStatement recordStatement) throws SQLException, IOException {
+        OrdImage imgProxy = null;
+
+        // Execute statement and get data to imgProxy
+        try (OracleResultSet resultSet = (OracleResultSet) recordStatement.executeQuery()) {
+            if (resultSet.next())
+                imgProxy = (OrdImage) resultSet.getORAData("GOODS_PHOTO", OrdImage.getORADataFactory());
+        }
+
+        // Load image from file
+        imgProxy.loadDataFromFile(path);
+        imgProxy.setProperties();
+
+        return imgProxy;
+    }
+
+
+
+    private static int InsertGoodBase(Good good, Connection conn) throws SQLException
+    {
+        String returnCols[] = { "GOODS_ID" };
+        PreparedStatement statement = getConnection().prepareStatement(
+          "INSERT INTO GOODS (GOODS_VOLUME, GOODS_NAME, GOODS_PHOTO, GOODS_PRICE) VALUES (?, ?, ordsys.ordimage.init(), ?)",
+                returnCols
+           );
+
+        int insertedRowId = -1;
+
+        try
+        {
+            statement.setDouble(1, good.getVolume());
+            statement.setString(2, good.getName());
+            statement.setDouble(3, good.getPrice());
+
+            try
+            {
+                int affectedRows = statement.executeUpdate();
+
+                if (affectedRows == 0)
+                {
+                    System.out.println("Inserting record failed. No rows affected.");
+                }
+
+                insertedRowId = GetInsertedRowID(statement);
+
+            }
+            catch (Exception e)
+            {
+                System.out.println("Updating prepared statement error. Message: " + e.getMessage());
+                return -1;
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Something went wrong when base inserting Good item. Message: " + e.getMessage());
+            return -1;
+        }
+        finally
+        {
+            statement.close();
+        }
+
+        return insertedRowId;
+    }
+
+    private static int GetInsertedRowID(PreparedStatement statement)
+    {
+        int rowId = -1;
+
+        try (ResultSet resultSet = statement.getGeneratedKeys())
+        {
+            if (resultSet.next())
+            {
+                rowId = resultSet.getInt(1);
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("Failed to retrieve ID of inserted record. Message: " + e.getMessage());
+        }
+
+        return rowId;
     }
 
 
