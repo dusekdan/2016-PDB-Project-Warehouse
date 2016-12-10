@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -32,6 +33,9 @@ public class ActionsController implements Initializable{
 
 
         // Not much to be initialized at the moment
+
+        // Initialize TableView data source
+        List<Good> AllGoodTypes = DatabaseD.GetGoods();
 
 
         // TODO: Remove this from final version
