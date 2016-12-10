@@ -1,16 +1,23 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
-import cz.vutbr.fit.tsql2lib.TSQL2Adapter;
-import cz.vutbr.fit.tsql2lib.TSQL2Types;
-import cz.vutbr.fit.tsql2lib.TypeMapper;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
+
 import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.pool.OracleDataSource;
 import oracle.ord.im.OrdImage;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 
 /**
@@ -92,6 +99,214 @@ public class DatabaseD {
             System.out.println("User name or password to database must not be null.");
             return false;
         }
+    }
+
+
+    /*
+     * Good record insertion, update and modification section
+     */
+
+    public static boolean InsertGood(Good good)
+    {
+        // One connection for the whole insertion logic
+        Connection conn = getConnection();
+
+        boolean isInsertedBase = false;
+        int affectedRowId; // Serves as identification of the record to be further updated with SI_* functions
+
+
+        // Insert basic values
+        try {
+            // Configure connection not to autocommit
+            conn.setAutoCommit(false);
+
+            affectedRowId = InsertGoodBase(good, conn);
+            if (affectedRowId != -1)
+                isInsertedBase = true;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Unable to save basic part to database. Message: " + e.getMessage());
+            return false;
+        }
+
+        InsertGoodMediaPart(conn, affectedRowId, good);
+
+        try {
+            conn.commit();
+            conn.setAutoCommit(true);
+        }
+        catch (Exception e)
+        {
+            System.out.println("Failed to insert Good record to the database. Message: " + e.getMessage());
+            return false;
+        }
+
+        return isInsertedBase;
+    }
+
+    private static boolean InsertGoodMediaPart(Connection conn, int affectedRowId, Good good)
+    {
+        OrdImage imgProxy = null;
+
+        // Insert the media data
+        try(OraclePreparedStatement selectStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "SELECT GOODS_PHOTO FROM GOODS WHERE GOODS_ID = ? FOR UPDATE")){
+
+            // Pass ID of newly inserted row to SELECT statement parameter
+            selectStatement.setInt(1, affectedRowId);
+
+            // Prepare file content to be saved to database
+            imgProxy = LoadImageFromFile(conn, good.getImgFilePath(), selectStatement);
+
+            if (!SaveImageToDatabase(conn, imgProxy, affectedRowId))
+                return false;
+
+            if (!CreateImageFeatures(conn, affectedRowId))
+                return false;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Unable to save media part to database. Message: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean CreateImageFeatures(Connection conn, int affectedRowId)
+    {
+        // Prepare basic record for features
+        try(OraclePreparedStatement featuresStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "UPDATE GOODS G SET G.GOODS_PHOTO_SI = SI_StillImage(G.GOODS_PHOTO.getContent()) WHERE GOODS_ID = ?")) {
+            featuresStatement.setInt(1, affectedRowId);
+            featuresStatement.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Creation of basic feature image failed. Message: " + e.getMessage());
+            return false;
+        }
+
+        // Create features and store them in database
+        try(OraclePreparedStatement featureExtractionStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "UPDATE GOODS SET "
+                        + "GOODS_PHOTO_AC = SI_AverageColor(GOODS_PHOTO_SI), "
+                        + "GOODS_PHOTO_CH = SI_ColorHistogram(GOODS_PHOTO_SI), "
+                        + "GOODS_PHOTO_PC = SI_PositionalColor(GOODS_PHOTO_SI), "
+                        + "GOODS_PHOTO_TX = SI_Texture(GOODS_PHOTO_SI) "
+                        + "WHERE GOODS_ID = ?")){
+            featureExtractionStatement.setInt(1, affectedRowId);
+            featureExtractionStatement.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Creation of features failed. Message: " + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+
+    private static boolean SaveImageToDatabase(Connection conn, OrdImage imageProxy, int itemId)
+    {
+        try(OraclePreparedStatement updateStatement = (OraclePreparedStatement) conn.prepareStatement(
+                "UPDATE GOODS SET GOODS_PHOTO = ? WHERE GOODS_ID = ?")) {
+            updateStatement.setORAData(1, imageProxy);
+            updateStatement.setInt(2, itemId);
+            updateStatement.executeUpdate();
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error occurred during saving image to database. Message: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static OrdImage LoadImageFromFile(Connection conn, String path, OraclePreparedStatement recordStatement) throws SQLException, IOException {
+        OrdImage imgProxy = null;
+
+        // Execute statement and get data to imgProxy
+        try (OracleResultSet resultSet = (OracleResultSet) recordStatement.executeQuery()) {
+            if (resultSet.next())
+                imgProxy = (OrdImage) resultSet.getORAData("GOODS_PHOTO", OrdImage.getORADataFactory());
+        }
+
+        // Load image from file
+        imgProxy.loadDataFromFile(path);
+        imgProxy.setProperties();
+
+        return imgProxy;
+    }
+
+
+
+    private static int InsertGoodBase(Good good, Connection conn) throws SQLException
+    {
+        String returnCols[] = { "GOODS_ID" };
+        PreparedStatement statement = getConnection().prepareStatement(
+          "INSERT INTO GOODS (GOODS_VOLUME, GOODS_NAME, GOODS_PHOTO, GOODS_PRICE) VALUES (?, ?, ordsys.ordimage.init(), ?)",
+                returnCols
+           );
+
+        int insertedRowId = -1;
+
+        try
+        {
+            statement.setDouble(1, good.getVolume());
+            statement.setString(2, good.getName());
+            statement.setDouble(3, good.getPrice());
+
+            try
+            {
+                int affectedRows = statement.executeUpdate();
+
+                if (affectedRows == 0)
+                {
+                    System.out.println("Inserting record failed. No rows affected.");
+                }
+
+                insertedRowId = GetInsertedRowID(statement);
+
+            }
+            catch (Exception e)
+            {
+                System.out.println("Updating prepared statement error. Message: " + e.getMessage());
+                return -1;
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Something went wrong when base inserting Good item. Message: " + e.getMessage());
+            return -1;
+        }
+        finally
+        {
+            statement.close();
+        }
+
+        return insertedRowId;
+    }
+
+    private static int GetInsertedRowID(PreparedStatement statement)
+    {
+        int rowId = -1;
+
+        try (ResultSet resultSet = statement.getGeneratedKeys())
+        {
+            if (resultSet.next())
+            {
+                rowId = resultSet.getInt(1);
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("Failed to retrieve ID of inserted record. Message: " + e.getMessage());
+        }
+
+        return rowId;
     }
 
 
@@ -203,7 +418,7 @@ public class DatabaseD {
                     "rack_goods_count NUMBER(32) NOT NULL," +
                     "valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,"+
                     "valid_to TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,"+
-                    "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id)" +
+                    "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id, valid_from, valid_to)" +
                     " )"
             );
           
@@ -222,12 +437,199 @@ public class DatabaseD {
                          "  REFERENCES rack_definitions(rack_defs_id)");
             System.out.println("alter3");
 
+            stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
     
+    public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
+        Statement stmt = null;
+        
+        try {
+            stmt = DatabaseD.getConnection().createStatement();
+            
+            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
+                    + " VALID_TO > CURRENT_TIMESTAMP"
+                    + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            int newCount = 0;
+            
+            if(executeQuery.next()) {
+                newCount  = executeQuery.getInt(1) + count;
+           
+            
+                executeQuery = stmt.executeQuery("SELECT COUNT(rack_goods_count) FROM rack_goods WHERE"
+                        + " VALID_TO > CURRENT_TIMESTAMP"
+                        + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            
+                int numResults = 0;
+                if(executeQuery.next()) {
+                    numResults = executeQuery.getInt(1);
+                }
+                if (numResults == 1) {
+                    stmt.execute("UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP"
+                                + " WHERE goods_id = " + goodID + ""
+                                + " AND racks_ID = " + stockID 
+                                + "AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                                + "");
+                } else {
+                    System.err.println("DOOMED"+numResults);
+                }
+        
+                
+                stmt.execute("INSERT INTO rack_goods VALUES("
+                    + stockID + ","
+                    + goodID + ","
+                    + newCount + ","
+                            + "CURRENT_TIMESTAMP,"
+                            + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+        
+            }else {
+            
+            stmt.execute("INSERT INTO rack_goods VALUES("
+                    + stockID + ","
+                    + goodID + ","
+                    + count + ","
+                            + "CURRENT_TIMESTAMP,"
+                            + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+            }
+            
+            
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return true;
+    }
     
+    public static boolean RemoveGoodFromStorage(int goodID, int stockID, int count) {
+        Statement stmt = null;
+        
+        try {
+            
+            stmt = DatabaseD.getConnection().createStatement();
+            
+            
+            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
+                    + " VALID_TO > CURRENT_TIMESTAMP"
+                    + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            int newCount = 0;
+            if(executeQuery.next()) {
+            newCount  = executeQuery.getInt(1) - count;
+            }
+            executeQuery = stmt.executeQuery("SELECT COUNT(rack_goods_count) FROM rack_goods WHERE"
+                    + " VALID_TO > CURRENT_TIMESTAMP"
+                    + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            
+            int numResults = 0;
+            if(executeQuery.next()) {
+            numResults = executeQuery.getInt(1);
+            }
+            if (numResults == 1) {
+                stmt.execute("UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP"
+                        + " WHERE goods_id = " + goodID + ""
+                                + " AND racks_ID = " + stockID +
+                        "AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                                + "");
+            }
+            
+            DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
+            
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return true;
+    }
+
+    public static ObservableList<StoreActivityRecord> GetStoreHistory() {
+        
+        ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
+
+        try (Connection connection = dataSource.getConnection())
+        {
+            System.out.println("Connection datasource.getconnection tried.");
+            try (
+                    PreparedStatement statement = connection.prepareStatement("SELECT * FROM rack_goods");
+                    ResultSet resultSet = statement.executeQuery();
+                    
+            )
+            {
+                while (resultSet.next())
+                {
+                    StoreActivityRecord record = new StoreActivityRecord(
+                            resultSet.getInt(2),
+                            resultSet.getInt(1),
+                            resultSet.getInt(3),
+                            resultSet.getTimestamp(4),
+                            resultSet.getTimestamp(5)
+                    );
+                    data.add(record);
+                }
+
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Exception when selecting entities occured. " + e.getMessage());
+            return data;
+        }
+
+        return data;
+    }
+
+        
+    public static ObservableList<StoreActivityRecord> GetStoreHistory(Calendar date) {
+        ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
+
+        try (Connection connection = dataSource.getConnection())
+        {
+            System.out.println("Connection datasource.getconnection tried.");
+            Timestamp today = new Timestamp(date.getTimeInMillis());
+            Calendar clone = (Calendar) date.clone();
+            clone.add(Calendar.DATE, 1);
+            Timestamp tomorrow = new Timestamp(clone.getTimeInMillis());
+            try (
+
+                    PreparedStatement statement = connection.prepareStatement(
+                            "SELECT * FROM rack_goods WHERE"
+                            + " valid_from > (?) "
+                            + ""
+                    );
+
+            )
+            {
+                statement.setTimestamp(1, today);
+             //   statement.setTimestamp(2, tomorrow);
+                ResultSet resultSet = statement.executeQuery();
+                    
+                while (resultSet.next())
+                {
+                    StoreActivityRecord record = new StoreActivityRecord(
+                            resultSet.getInt(2),
+                            resultSet.getInt(1),
+                            resultSet.getInt(3),
+                            resultSet.getTimestamp(4),
+                            resultSet.getTimestamp(5)
+                    );
+                    data.add(record);
+                }
+
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Exception when selecting entities occured. " + e.getMessage());
+            return data;
+        }
+
+        return data;
+    }
 
     public DatabaseD(){}
 }
