@@ -83,13 +83,20 @@ public class DatabaseD {
     {
         Connection connection = null;
 
-        try
+        // Remarks: This is here because of the heavy load on school servers, getConnection function tends to end up
+        // without seizing the connection. This way, it tries until it gets it. While this is really not fair, it
+        // certainly is efficient way around.
+        while(true)
         {
-            connection = dataSource.getConnection();
-        }
-        catch (SQLException e)
-        {
-            System.out.println("Exception during retrieving connection to Oracle Data Source. Message: " + e.getMessage());
+            try
+            {
+                connection = dataSource.getConnection();
+                break;
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Exception during retrieving connection to Oracle Data Source. Message: " + e.getMessage() + ". Proceeding to make another attempt on seizing the connection.");
+            }
         }
 
         return connection;
