@@ -65,7 +65,7 @@ public class DatabaseD {
             dataSource.setUser(userName);
             dataSource.setPassword(password);
 
-            System.out.print("DB initialized successfully.");
+            System.out.println("D: Database initialized successfully.");
         }
         catch (SQLException e)
         {

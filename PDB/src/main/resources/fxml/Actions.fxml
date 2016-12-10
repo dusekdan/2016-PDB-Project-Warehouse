@@ -15,8 +15,13 @@
       <Button layoutX="14.0" layoutY="47.0" mnemonicParsing="false" onAction="#addGoodType" text="Přidat typ zboží" />
       <TableView fx:id="tbvGoodTypes" layoutX="14.0" layoutY="89.0" prefHeight="200.0" prefWidth="382.0">
         <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
+            <TableColumn fx:id="goodId" prefWidth="20.0" text="ID" />
+            <TableColumn fx:id="goodName" prefWidth="75.0" text="Název zboží" />
+            <TableColumn fx:id="goodVolume" prefWidth="75.0" text="Objem" />
+            <TableColumn fx:id="goodPrice" prefWidth="75.0" text="Cena" />
+            <TableColumn fx:id="goodRemove" prefWidth="120.0" text="Odstranit zboží" />
+
         </columns>
       </TableView>
+      <Button fx:id="btnRefresh" onMouseClicked="#reloadTableView" layoutX="14.0" layoutY="292.0" mnemonicParsing="false" text="Refresh" />
     </children></AnchorPane>
