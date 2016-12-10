@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,23 +22,27 @@ import java.util.List;
 public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
 
     public Color filling;
-    public java.util.List<CustomRackDefinition> racksList;
+    public List<CustomRackDefinition> racksList;
 
     public SpatialViewerForAvailableRacks() throws SQLException {
+
+        racksList = new ArrayList<>();
         filling = Color.gray;
+
         System.out.println("Calling SpatialViewerForAvailableRacks constructor ...");
         // load the Shape objects from a db.
         try {
-            getAvailableRacks(racksList);
+            getAvailableRacks();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.print("Racks successfully loaded from database ...");
+
+        System.out.println("Loading from database finished... Rack list: "+ racksList.toString());
 
     }
 
-    private void getAvailableRacks(List<CustomRackDefinition> racksList) throws SQLException  {
+    private void getAvailableRacks() throws SQLException  {
         // create a OracleDataSource instance
 
         try (Connection connection = DatabaseD.getConnection())
@@ -60,13 +65,12 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
 
                     // get a Shape object (the object drawable into Java GUI)
                     Shape shape = SpatialConverters.jGeometry2Shape(jGeometry);
-                    System.out.println("...Loading from database ... getBounds() of shape x: "+ shape.getBounds().x + " y: " +  shape.getBounds().y);
                     CustomRackDefinition shapeObject = new CustomRackDefinition(id, shape);
 
                     // add the Shape object into a list of drawable objects
                     if (shape != null) {
                         racksList.add(shapeObject);
-                        System.out.println("Loading shape from database ... shape: "+ shape.toString());
+                        System.out.println("Adding shape to rackList... "+ shape.toString());
                     }
                 }
             }
@@ -92,10 +96,10 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
         // a canvas of the Graphics context
         Graphics2D g2D = (Graphics2D) g;
 
-        if (racksList == null)
+        if (racksList.isEmpty())
         {
             Shape testShape = new Ellipse2D.Float(200, 200, 100, 100);
-
+            System.out.println("Drawing ellipse ...");
             g2D.setPaint(filling);
             g2D.fill(testShape);
             // draw a boundary of the shape
@@ -115,17 +119,13 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
 
             AffineTransform old = g2D.getTransform();
 
-            System.out.println("shapeObject: " + shapeObject.toString());
-
-            g2D.translate(150,150);
-
             filling = Color.blue;
             if (shapeObject.isSelected())
             {
                 filling = Color.pink;
             }
 
-
+            System.out.println("Drawing existing rack definition from databaase ...");
 
             g2D.setPaint(filling);
             g2D.fill(shapeObject.getShape());

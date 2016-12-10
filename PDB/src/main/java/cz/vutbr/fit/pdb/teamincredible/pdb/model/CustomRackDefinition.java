@@ -41,7 +41,7 @@ public class CustomRackDefinition {
 
     public boolean isSelected()
     {
-        return isSelected();
+        return selected;
     }
 
     public void setSelected()
