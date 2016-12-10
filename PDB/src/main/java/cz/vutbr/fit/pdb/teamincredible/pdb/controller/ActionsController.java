@@ -2,15 +2,18 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodDialog;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.ImportDBAlert;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -19,6 +22,47 @@ import java.util.ResourceBundle;
  * Definitions related to Actions tab
  */
 public class ActionsController implements Initializable{
+
+    @FXML private TableView<GoodTypeRecord> tbvGoodTypes;
+    @FXML private TableColumn<GoodTypeRecord, String> goodId;
+    @FXML private TableColumn<GoodTypeRecord, String> goodName;
+    @FXML private TableColumn<GoodTypeRecord, String> goodPrice;
+    @FXML private TableColumn<GoodTypeRecord, String> goodVolume;
+
+
+    /**
+     * Initialization function filling TableView with records from database
+     */
+    private void InitializeGoodTypesTableView()
+    {
+        System.out.println("D: Initializing Action tab's table view.");
+
+        goodId.setCellValueFactory(new PropertyValueFactory<>("goodId"));
+        goodName.setCellValueFactory(new PropertyValueFactory<>("goodName"));
+        goodPrice.setCellValueFactory(new PropertyValueFactory<>("goodPrice"));
+        goodVolume.setCellValueFactory(new PropertyValueFactory<>("goodVolume"));
+
+        tbvGoodTypes.setItems(GoodTypeRecord.getData());
+
+        HookDoubleClickEventsToTableRow();
+    }
+
+
+
+
+    @FXML public void reloadTableView()
+    {
+        tbvGoodTypes.setItems(GoodTypeRecord.getData());
+    }
+
+    /**
+     * Shows good record detail
+     */
+    private void ShowGoodDetail(int id)
+    {
+        // TODO: Implement this
+    }
+
 
     /**
      * First method called when ActionScene is loaded
@@ -33,6 +77,12 @@ public class ActionsController implements Initializable{
 
         // Not much to be initialized at the moment
 
+        // Initialize TableView data source
+        //List<Good> AllGoodTypes = DatabaseD.GetGoods();
+        InitializeGoodTypesTableView();
+
+
+
 
         // TODO: Remove this from final version
         // Check out how can I select something
@@ -42,6 +92,34 @@ public class ActionsController implements Initializable{
         //  System.out.println("Id:" + good.getId());
         //  System.out.println("Name: " + good.getName());
         //}
+    }
+
+
+    /**
+     * Hooks double click events coming from row of TableView to
+     */
+    private void HookDoubleClickEventsToTableRow()
+    {
+        tbvGoodTypes.setRowFactory(tv -> {
+            TableRow<GoodTypeRecord> row = new TableRow<>();
+
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+
+                    // Action executed after double click
+                    GoodTypeRecord rowData = row.getItem();
+
+                    System.out.println(rowData.goodIdProperty().toString());
+
+                    int GoodId = Integer.parseInt(rowData.goodIdProperty().toString());
+
+                    ShowGoodDetail(GoodId);
+                    System.out.println("D: Showing detail dialog for Good.Id=" + GoodId);
+
+                }
+            });
+            return row;
+        });
     }
 
 
@@ -72,7 +150,7 @@ public class ActionsController implements Initializable{
      * Import database button action
      * @param actionEvent ActionEvent information about event that is linked to the method call
      */
-    public void importTestDB(ActionEvent actionEvent) {
+    @FXML public void importTestDB(ActionEvent actionEvent) {
 
         ImportDBAlert confirm = new ImportDBAlert(Alert.AlertType.CONFIRMATION);
         Optional<ButtonType> result = confirm.showAndWait();

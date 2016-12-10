@@ -42,6 +42,7 @@ public class MainApp extends Application {
         stage.show();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void stop() throws Exception{
         DatabaseD.closeConnection();
@@ -64,8 +65,11 @@ public class MainApp extends Application {
                 cred = dialog.showAndWait();
             }
 
-            userName = cred.get().getKey();
-            password = cred.get().getValue();
+            if (cred.isPresent())
+            {
+                userName = cred.get().getKey();
+                password = cred.get().getValue();
+            }
         }
     }
 
