@@ -21,24 +21,42 @@ import javafx.collections.ObservableList;
 
 
 /**
- * Created by Dan on 12/2/2016.
+ * Created by Dan on 12/2/2016
+ * Contains logic for connection to database and working with database object
+ *
+ * Note: Possible enhancement would be to implement some sort of ORM-style class of our own, but that appears to be an
+ * overkill for the project of given size and purpose.
  */
 public class DatabaseD {
+
+    // Database connection credentials
     private static String userName;
     private static String password;
 
+    // Property holding Oracle Data Source used application wide
+    private static OracleDataSource dataSource;
+
+
+    /**
+     * Setter for String userName property
+     */
     public static void setUserName(String value)
     {
         userName = value;
     }
 
+    /**
+     * Setter for String password property
+     */
     public static void setPassword(String value)
     {
         password = value;
     }
 
-    private static OracleDataSource dataSource;
 
+    /**
+     * Initializes connection to database
+     */
     public static void init()
     {
         try {
@@ -56,6 +74,11 @@ public class DatabaseD {
         }
     }
 
+
+    /**
+     * Returns new instance of connection
+     * @return Connection active connection to Oracle Data Source or null on connection failure
+     */
     public static Connection getConnection()
     {
         Connection connection = null;
@@ -66,12 +89,18 @@ public class DatabaseD {
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+            System.out.println("Exception during retrieving connection to Oracle Data Source. Message: " + e.getMessage());
         }
 
         return connection;
     }
 
+
+    /**
+     *  Closes connection to Oracle Data Source
+     *  @deprecated Method uses OracleDataSource.close() method that is also deprecated
+     *  @implNote Method is called in JavaFX application stop() method to terminate possibly opened connection before exiting
+     */
     public static void closeConnection()
     {
         try{
@@ -82,17 +111,18 @@ public class DatabaseD {
         {
             System.out.println("Unable to close connection to datasource. Whatever, it's deprecated anyway.");
         }
-
     }
 
+
+    /**
+     * Tests whether connection to database could be established or not
+     * @return boolean True for established connection, otherwise false
+     */
     public static boolean testConnection()
     {
         if (userName != null &&  password != null)
         {
-            if (DatabaseD.getConnection() != null)
-                return true;
-            else
-                return false;
+            return DatabaseD.getConnection() != null;
         }
         else
         {
@@ -102,10 +132,40 @@ public class DatabaseD {
     }
 
 
+    /**
+     * Helper method returning inserted row ID (usefull for multipart queries and consequential updates)
+     * @param statement PreparedStatement Insert query which inserted row is to be returned
+     * @return
+     */
+    private static int GetInsertedRowID(PreparedStatement statement)
+    {
+        int rowId = -1;
+
+        try (ResultSet resultSet = statement.getGeneratedKeys())
+        {
+            if (resultSet.next())
+            {
+                rowId = resultSet.getInt(1);
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("Failed to retrieve ID of inserted record. Message: " + e.getMessage());
+        }
+
+        return rowId;
+    }
+
     /*
      * Good record insertion, update and modification section
      */
 
+
+    /**
+     * Inserts Good object into database, both media and text part of it
+     * @param good Good object to be inserted into database
+     * @return Boolean true on success, false otherwise
+     */
     public static boolean InsertGood(Good good)
     {
         // One connection for the whole insertion logic
@@ -120,7 +180,7 @@ public class DatabaseD {
             // Configure connection not to autocommit
             conn.setAutoCommit(false);
 
-            affectedRowId = InsertGoodBase(good, conn);
+            affectedRowId = InsertGoodBase(good);
             if (affectedRowId != -1)
                 isInsertedBase = true;
         }
@@ -145,6 +205,14 @@ public class DatabaseD {
         return isInsertedBase;
     }
 
+
+    /**
+     * Method responsible for insertion and extraction of features for media part of the insert query
+     * @param conn Connection to oracle data source
+     * @param affectedRowId int identification of the row to which insertion of media part corresponds
+     * @param good Good object which media properties should be inserted
+     * @return Boolean true on success, false otherwise
+     */
     private static boolean InsertGoodMediaPart(Connection conn, int affectedRowId, Good good)
     {
         OrdImage imgProxy = null;
@@ -157,7 +225,7 @@ public class DatabaseD {
             selectStatement.setInt(1, affectedRowId);
 
             // Prepare file content to be saved to database
-            imgProxy = LoadImageFromFile(conn, good.getImgFilePath(), selectStatement);
+            imgProxy = LoadImageFromFile(good.getImgFilePath(), selectStatement);
 
             if (!SaveImageToDatabase(conn, imgProxy, affectedRowId))
                 return false;
@@ -173,6 +241,13 @@ public class DatabaseD {
         return true;
     }
 
+
+    /**
+     * Creates StillImage features for the OrdImage object
+     * @param conn Connection to oracle data source
+     * @param affectedRowId int identification of the row to which insertion of media part corresponds
+     * @return Boolean true on success, false otherwise
+     */
     private static boolean CreateImageFeatures(Connection conn, int affectedRowId)
     {
         // Prepare basic record for features
@@ -208,6 +283,13 @@ public class DatabaseD {
     }
 
 
+    /**
+     * Saves OrdImage file to database
+     * @param conn Connection to oracle data source
+     * @param imageProxy OrdImage representing image to be saved to database
+     * @param itemId int identification of the corresponding record
+     * @return Boolean true on success, false otherwise
+     */
     private static boolean SaveImageToDatabase(Connection conn, OrdImage imageProxy, int itemId)
     {
         try(OraclePreparedStatement updateStatement = (OraclePreparedStatement) conn.prepareStatement(
@@ -225,7 +307,16 @@ public class DatabaseD {
         }
     }
 
-    private static OrdImage LoadImageFromFile(Connection conn, String path, OraclePreparedStatement recordStatement) throws SQLException, IOException {
+
+    /**
+     * Loads image from file to OrdImage format
+     * @param path String path to file to be loaded
+     * @param recordStatement OraclePreparedStatement relevant to current insertion
+     * @return OrdImage loaded image from file
+     * @throws SQLException on possible faults.
+     * @throws IOException on possible faults
+     */
+    private static OrdImage LoadImageFromFile(String path, OraclePreparedStatement recordStatement) throws SQLException, IOException {
         OrdImage imgProxy = null;
 
         // Execute statement and get data to imgProxy
@@ -242,74 +333,52 @@ public class DatabaseD {
     }
 
 
-
-    private static int InsertGoodBase(Good good, Connection conn) throws SQLException
+    /**
+     * Inserts textual part of the GOODS table record
+     * @param good Good object to be inserted
+     * @return int number identification of the inserted row
+     * @throws SQLException on possible faults
+     */
+    private static int InsertGoodBase(Good good) throws SQLException
     {
         String returnCols[] = { "GOODS_ID" };
-        PreparedStatement statement = getConnection().prepareStatement(
-          "INSERT INTO GOODS (GOODS_VOLUME, GOODS_NAME, GOODS_PHOTO, GOODS_PRICE) VALUES (?, ?, ordsys.ordimage.init(), ?)",
-                returnCols
-           );
 
         int insertedRowId = -1;
 
-        try
-        {
+        try (PreparedStatement statement = getConnection().prepareStatement(
+                "INSERT INTO GOODS (GOODS_VOLUME, GOODS_NAME, GOODS_PHOTO, GOODS_PRICE) VALUES (?, ?, ordsys.ordimage.init(), ?)",
+                returnCols
+        )) {
             statement.setDouble(1, good.getVolume());
             statement.setString(2, good.getName());
             statement.setDouble(3, good.getPrice());
 
-            try
-            {
+            try {
                 int affectedRows = statement.executeUpdate();
 
-                if (affectedRows == 0)
-                {
+                if (affectedRows == 0) {
                     System.out.println("Inserting record failed. No rows affected.");
                 }
 
                 insertedRowId = GetInsertedRowID(statement);
 
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 System.out.println("Updating prepared statement error. Message: " + e.getMessage());
                 return -1;
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("Something went wrong when base inserting Good item. Message: " + e.getMessage());
             return -1;
-        }
-        finally
-        {
-            statement.close();
         }
 
         return insertedRowId;
     }
 
-    private static int GetInsertedRowID(PreparedStatement statement)
-    {
-        int rowId = -1;
 
-        try (ResultSet resultSet = statement.getGeneratedKeys())
-        {
-            if (resultSet.next())
-            {
-                rowId = resultSet.getInt(1);
-            }
-        }
-        catch (Exception e)
-        {
-            System.out.println("Failed to retrieve ID of inserted record. Message: " + e.getMessage());
-        }
-
-        return rowId;
-    }
-
-
+    /**
+     * Retrieves entities from GOODS table
+     * @return List<Good> List of Good object representing entities stored in GOODS table. No SI_* types are retrieved.
+     */
     public static List<Good> GetGoods()
     {
         List<Good> entities = new ArrayList<>();
@@ -318,37 +387,49 @@ public class DatabaseD {
         {
             System.out.println("Connection datasource.getconnection tried.");
             try (
-                    PreparedStatement statement = connection.prepareStatement("SELECT * FROM Goods");
-                    ResultSet resultSet = statement.executeQuery();
+                    OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("SELECT * FROM Goods");
+                    OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();
             )
             {
-                System.out.println("Second try...");
+                // Retrieving entities from database
                 while (resultSet.next())
                 {
-                    System.out.println("Adding entity...");
+                    System.out.println("Retrieving entity from GOODS table...");
+
+                    // Retrieve raw data and cast it to OrdImage
+                    OrdImage entityPhoto = (OrdImage) resultSet.getORAData(4, OrdImage.getORADataFactory());
+
                     Good entity = new Good();
-                    entity.setId(resultSet.getInt(1));  // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, yeah)
+                    entity.setId(resultSet.getInt(1));          // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, etc.)
+                    entity.setVolume(resultSet.getDouble(2));
                     entity.setName(resultSet.getString(3));
-                    //entity.setPhoto(resultSet.getString(4));
-                    //entity.setCount(); // TODO: this could be a problem
-                    // TODO: Set column types accordingly, so this checks out with reality
+                    entity.setPhoto(entityPhoto);
+                    entity.setPrice(resultSet.getDouble(10));
+
                     entities.add(entity);
                 }
             }
         }
         catch(Exception e)
         {
-            System.out.println("Exception when selecting entities occured. " + e.getMessage());
+            System.out.println("Exception in selecting GOODS entities occurred. Message: " + e.getMessage());
             return entities;
         }
 
         return entities;
     }
 
+
+    /*
+     * Database initialization part
+     */
+
+
     /**
      *
      *
      */
+    @SuppressWarnings("SqlDialectInspection")
     public static void initDBStruct() {
         //  https://github.com/rychly/tsql2lib/blob/master/tsql2sample/src/main/java/cz/vutbr/fit/tsql2sample/App.java
         Statement stmt = null;
@@ -442,6 +523,12 @@ public class DatabaseD {
             System.err.println(e.getMessage());
         }
     }
+
+
+
+    /*
+     * Methods for working with Storage tab (and goods object, possibly)
+     */
     
     public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
