@@ -12,8 +12,8 @@
 }
 
 .storeAnchorPane {
-    -fx-border-color: black;
+    -fx-border-color: red;
     -fx-border-style: solid;
+    -fx-background-color: aqua;
     -fx-border-radius: 2%;
-    -fx-padding: 10dppx;
 }

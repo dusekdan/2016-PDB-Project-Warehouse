@@ -170,7 +170,7 @@ public class ActionsController implements Initializable{
      * @param title String message in the alert title
      * @param content String message in the alert content
      */
-    private void DisplayInformation(String title, String content)
+    public static void DisplayInformation(String title, String content)
     {
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle(title);

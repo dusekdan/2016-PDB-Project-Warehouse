@@ -1,41 +1,29 @@
-package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
+package cz.vutbr.fit.pdb.teamincredible.pdb.view;
+
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomShape;
+import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
+import cz.vutbr.fit.pdb.teamincredible.pdb.SpatialConverters;
+import oracle.spatial.geometry.JGeometry;
 
 import java.awt.*;
-import java.awt.Rectangle;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.sql.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-
-import java.sql.SQLException;
-
-import java.util.ArrayList;
-
-import javax.swing.*;
-
-import cz.vutbr.fit.pdb.teamincredible.pdb.CustomShape;
-import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
-import javafx.scene.shape.*;
-import oracle.spatial.geometry.JGeometry;
 
 import static java.awt.event.MouseEvent.*;
 
-
 /**
- * Created by Anna on 03/12/2016.
+ * Created by popko on 10/12/2016.
  */
-public class Ex2SpatialViewer extends JPanel {
-
-    /**
-     * Exception when converting a JGeometry object to a Shape object.
-     */
-    public class JGeometry2ShapeException extends Exception {
-    };
+public class SpatialViewerForStore extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 1L;
     private static final short maxX = 800;
@@ -44,7 +32,7 @@ public class Ex2SpatialViewer extends JPanel {
     public Color filling;
     public static final int leftButton = BUTTON1;
     public static final int rightButton = BUTTON3;
-    public List<CustomShape> shapeList = new ArrayList<>();
+    public static List<CustomShape> shapeList = new ArrayList<>();
 
     public static final int KEY_UP = 38;
     public static final int KEY_DOWN = 40;
@@ -52,10 +40,11 @@ public class Ex2SpatialViewer extends JPanel {
     public static final int KEY_RIGHT = 39;
     public static final int KEY_ENTER = 10;
     private int basicUnit = 5;
+    public static boolean hasChanges;
 
 
 
-    public Ex2SpatialViewer() throws SQLException {
+    public SpatialViewerForStore() throws SQLException {
         filling = Color.gray;
         System.out.println("Calling Ex2SpatialViewer constructor ...");
         // load the Shape objects from a db.
@@ -65,7 +54,8 @@ public class Ex2SpatialViewer extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.print("Racks successfully loaded from database ...");
+
+        hasChanges = false;
 
         this.addKeyListener(new KeyAdapter() {
             @Override
@@ -85,19 +75,23 @@ public class Ex2SpatialViewer extends JPanel {
                 switch (keyCode)
                 {
                     case KEY_DOWN:
-                        shape.moveDown(basicUnit);
+                        if (shape.moveDown(basicUnit))
+                            hasChanges = true;
                         repaint();
                         break;
                     case KEY_UP:
-                        shape.moveUp(basicUnit);
+                        if (shape.moveUp(basicUnit))
+                            hasChanges = true;
                         repaint();
                         break;
                     case KEY_LEFT:
-                        shape.moveLeft(basicUnit);
+                        if (shape.moveLeft(basicUnit))
+                            hasChanges = true;;
                         repaint();
                         break;
                     case KEY_RIGHT:
-                        shape.moveRight(basicUnit);
+                        if (shape.moveRight(basicUnit))
+                            hasChanges = true;;
                         repaint();
                         break;
                 }
@@ -136,7 +130,7 @@ public class Ex2SpatialViewer extends JPanel {
                     System.out.println("No selected shape to move.");
                     return false;
                 }
-                    boolean isFreeWay = true;
+                boolean isFreeWay = true;
                 Rectangle futureBoundingBox = selectedShape.getBoundingBox();
                 Point translationPoint = new Point();
                 switch (keyCode)
@@ -271,6 +265,7 @@ public class Ex2SpatialViewer extends JPanel {
                 System.out.println("Rotation before: "+ shape.getRotation());
                 shape.incrementRotation();
                 System.out.println("Rotation after increment: "+ shape.getRotation());
+                hasChanges = true;
                 repaint();
             }
         });
@@ -278,7 +273,7 @@ public class Ex2SpatialViewer extends JPanel {
         System.out.println("Constructor of Ex2SpatialViewer ended ...");
     }
 
-    private void getExistingRacks(List<CustomShape> shapeList) throws SQLException {
+    private void getExistingRacks(java.util.List<CustomShape> shapeList) throws SQLException {
 
         // create a OracleDataSource instance
 
@@ -287,7 +282,7 @@ public class Ex2SpatialViewer extends JPanel {
             try (
                     PreparedStatement statement = connection.prepareStatement("select * from RACKS");
                     ResultSet resultSet = statement.executeQuery();
-                    )
+            )
             {
                 while (resultSet.next()) {
                     // get a JGeometry object (the Java representation of SDO_GEOMETRY data)
@@ -298,7 +293,7 @@ public class Ex2SpatialViewer extends JPanel {
                     System.out.println("Loading shape from database ... shape: "+ jGeometry.toString());
 
                     // get a Shape object (the object drawable into Java GUI)
-                    Shape shape = jGeometry2Shape(jGeometry);
+                    Shape shape = SpatialConverters.jGeometry2Shape(jGeometry);
                     System.out.println("...Loading from database ... getBounds() of shape x: "+ shape.getBounds().x + " y: " +  shape.getBounds().y);
                     CustomShape shapeObject = new CustomShape(shape);
                     System.out.println("...Loading from database ... boundingBox() of shape: "+ shapeObject.getBoundingBox().toString());
@@ -316,29 +311,8 @@ public class Ex2SpatialViewer extends JPanel {
         }
     }
 
-    /**
-     * Make a Shape object from a JGeometry object (the Java representation of
-     * SDO_GEOMETRY data). The Shape objects are drawable into Java GUI.
-     *
-     * @param jGeometry the JGeometry object as an input
-     * @return the Shape object corresponding to the input JGeometry object
-     * @throws JGeometry2ShapeException if cannot make the Shape object from the
-     * JGeometry object
-     */
-    public Shape jGeometry2Shape(JGeometry jGeometry) throws JGeometry2ShapeException {
-        Shape shape;
-        // check a type of JGeometry object
-        switch (jGeometry.getType()) {
-            // it is a polygon
-            case JGeometry.GTYPE_POLYGON:
-                shape = jGeometry.createShape();
-                break;
-            // it is something else (we do not know how to convert)
-            default:
-                throw new JGeometry2ShapeException();
-        }
-        return shape;
-    }
+
+
 
     /**
      * Invoked by Swing to draw components. Applications should not invoke paint
@@ -399,7 +373,7 @@ public class Ex2SpatialViewer extends JPanel {
     {
         for (CustomShape shapeObject : shapeList)
         {
-            shapeObject.unselect();
+            shapeObject.unSelect();
         }
     }
 
@@ -412,5 +386,16 @@ public class Ex2SpatialViewer extends JPanel {
         }
         return null;
     }
+
+    public static boolean hasChanges()
+    {
+        return hasChanges;
+    }
+
+    public static List<CustomShape> returnAllRacksFromStore()
+    {
+        return shapeList;
+    }
+
 
 }

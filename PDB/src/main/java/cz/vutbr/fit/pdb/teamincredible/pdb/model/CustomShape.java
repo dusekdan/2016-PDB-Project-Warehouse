@@ -1,4 +1,4 @@
-package cz.vutbr.fit.pdb.teamincredible.pdb;
+package cz.vutbr.fit.pdb.teamincredible.pdb.model;
 
 import java.awt.*;
 
@@ -84,17 +84,17 @@ public class CustomShape {
         this.selected = true;
     }
 
-    public void unselect()
+    public void unSelect()
     {
         this.selected = false;
     }
 
-    public void moveDown(int unit)
+    public boolean moveDown(int unit)
     {
         //can we move down?
         //I am still in the canvas?
         if (this.boundingBox.y + this.boundingBox.height + unit >= 500)
-            return;
+            return false;
 
         System.out.println("Bounding box: "+ this.boundingBox.toString());
         System.out.println("Translation: "+ this.translation.toString());
@@ -103,14 +103,15 @@ public class CustomShape {
         this.recalculateBoundingBox(0, unit);
         System.out.println("Recalculated bounding box: "+ this.boundingBox.toString());
         System.out.println("Recalculated translation: "+ this.translation.toString());
+        return true;
     }
 
-    public void moveUp(int unit)
+    public boolean moveUp(int unit)
     {
         //can we move down?
         //I am still in the canvas?
         if (this.boundingBox.y - unit <= 0)
-            return;
+            return false;
 
         System.out.println("Bounding box: "+ this.boundingBox.toString());
         System.out.println("Translation: "+ this.translation.toString());
@@ -119,14 +120,15 @@ public class CustomShape {
         this.recalculateBoundingBox(0, 0-unit);
         System.out.println("Recalculated bounding box: "+ this.boundingBox.toString());
         System.out.println("Recalculated translation: "+ this.translation.toString());
+        return true;
     }
 
-    public void moveLeft(int unit)
+    public boolean moveLeft(int unit)
     {
         //can we move down?
         //I am still in the canvas?
         if (this.boundingBox.x - unit <= 0)
-            return;
+            return false;
 
         System.out.println("Bounding box: "+ this.boundingBox.toString());
         System.out.println("Translation: "+ this.translation.toString());
@@ -135,14 +137,15 @@ public class CustomShape {
         this.recalculateBoundingBox(0 - unit, 0);
         System.out.println("Recalculated bounding box: "+ this.boundingBox.toString());
         System.out.println("Recalculated translation: "+ this.translation.toString());
+        return true;
     }
 
-    public void moveRight(int unit)
+    public boolean moveRight(int unit)
     {
         //can we move down?
         //I am still in the canvas?
         if (this.boundingBox.x + this.boundingBox.width + unit >= 500)
-            return;
+            return false;
 
         System.out.println("Bounding box: "+ this.boundingBox.toString());
         System.out.println("Translation: "+ this.translation.toString());
@@ -151,5 +154,7 @@ public class CustomShape {
         this.recalculateBoundingBox(unit, 0);
         System.out.println("Recalculated bounding box: "+ this.boundingBox.toString());
         System.out.println("Recalculated translation: "+ this.translation.toString());
+
+        return true;
     }
 }
