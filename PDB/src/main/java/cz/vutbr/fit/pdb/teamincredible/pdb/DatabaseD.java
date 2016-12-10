@@ -1,10 +1,8 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
-import com.sun.deploy.security.WIExplorerSigningCertStore;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
-import cz.vutbr.fit.tsql2lib.TSQL2Adapter;
-import cz.vutbr.fit.tsql2lib.TSQL2Types;
-import cz.vutbr.fit.tsql2lib.TypeMapper;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
+
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.pool.OracleDataSource;
@@ -13,7 +11,13 @@ import oracle.ord.im.OrdImage;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 
 /**
@@ -414,7 +418,7 @@ public class DatabaseD {
                     "rack_goods_count NUMBER(32) NOT NULL," +
                     "valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,"+
                     "valid_to TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,"+
-                    "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id)" +
+                    "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id, valid_from, valid_to)" +
                     " )"
             );
           
@@ -433,12 +437,199 @@ public class DatabaseD {
                          "  REFERENCES rack_definitions(rack_defs_id)");
             System.out.println("alter3");
 
+            stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
     
+    public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
+        Statement stmt = null;
+        
+        try {
+            stmt = DatabaseD.getConnection().createStatement();
+            
+            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
+                    + " VALID_TO > CURRENT_TIMESTAMP"
+                    + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            int newCount = 0;
+            
+            if(executeQuery.next()) {
+                newCount  = executeQuery.getInt(1) + count;
+           
+            
+                executeQuery = stmt.executeQuery("SELECT COUNT(rack_goods_count) FROM rack_goods WHERE"
+                        + " VALID_TO > CURRENT_TIMESTAMP"
+                        + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            
+                int numResults = 0;
+                if(executeQuery.next()) {
+                    numResults = executeQuery.getInt(1);
+                }
+                if (numResults == 1) {
+                    stmt.execute("UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP"
+                                + " WHERE goods_id = " + goodID + ""
+                                + " AND racks_ID = " + stockID 
+                                + "AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                                + "");
+                } else {
+                    System.err.println("DOOMED"+numResults);
+                }
+        
+                
+                stmt.execute("INSERT INTO rack_goods VALUES("
+                    + stockID + ","
+                    + goodID + ","
+                    + newCount + ","
+                            + "CURRENT_TIMESTAMP,"
+                            + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+        
+            }else {
+            
+            stmt.execute("INSERT INTO rack_goods VALUES("
+                    + stockID + ","
+                    + goodID + ","
+                    + count + ","
+                            + "CURRENT_TIMESTAMP,"
+                            + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+            }
+            
+            
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return true;
+    }
     
+    public static boolean RemoveGoodFromStorage(int goodID, int stockID, int count) {
+        Statement stmt = null;
+        
+        try {
+            
+            stmt = DatabaseD.getConnection().createStatement();
+            
+            
+            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
+                    + " VALID_TO > CURRENT_TIMESTAMP"
+                    + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            int newCount = 0;
+            if(executeQuery.next()) {
+            newCount  = executeQuery.getInt(1) - count;
+            }
+            executeQuery = stmt.executeQuery("SELECT COUNT(rack_goods_count) FROM rack_goods WHERE"
+                    + " VALID_TO > CURRENT_TIMESTAMP"
+                    + " AND goods_id = " + goodID + " AND racks_ID = " + stockID );
+            
+            int numResults = 0;
+            if(executeQuery.next()) {
+            numResults = executeQuery.getInt(1);
+            }
+            if (numResults == 1) {
+                stmt.execute("UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP"
+                        + " WHERE goods_id = " + goodID + ""
+                                + " AND racks_ID = " + stockID +
+                        "AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                                + "");
+            }
+            
+            DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
+            
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return true;
+    }
+
+    public static ObservableList<StoreActivityRecord> GetStoreHistory() {
+        
+        ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
+
+        try (Connection connection = dataSource.getConnection())
+        {
+            System.out.println("Connection datasource.getconnection tried.");
+            try (
+                    PreparedStatement statement = connection.prepareStatement("SELECT * FROM rack_goods");
+                    ResultSet resultSet = statement.executeQuery();
+                    
+            )
+            {
+                while (resultSet.next())
+                {
+                    StoreActivityRecord record = new StoreActivityRecord(
+                            resultSet.getInt(2),
+                            resultSet.getInt(1),
+                            resultSet.getInt(3),
+                            resultSet.getTimestamp(4),
+                            resultSet.getTimestamp(5)
+                    );
+                    data.add(record);
+                }
+
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Exception when selecting entities occured. " + e.getMessage());
+            return data;
+        }
+
+        return data;
+    }
+
+        
+    public static ObservableList<StoreActivityRecord> GetStoreHistory(Calendar date) {
+        ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
+
+        try (Connection connection = dataSource.getConnection())
+        {
+            System.out.println("Connection datasource.getconnection tried.");
+            Timestamp today = new Timestamp(date.getTimeInMillis());
+            Calendar clone = (Calendar) date.clone();
+            clone.add(Calendar.DATE, 1);
+            Timestamp tomorrow = new Timestamp(clone.getTimeInMillis());
+            try (
+
+                    PreparedStatement statement = connection.prepareStatement(
+                            "SELECT * FROM rack_goods WHERE"
+                            + " valid_from > (?) "
+                            + ""
+                    );
+
+            )
+            {
+                statement.setTimestamp(1, today);
+             //   statement.setTimestamp(2, tomorrow);
+                ResultSet resultSet = statement.executeQuery();
+                    
+                while (resultSet.next())
+                {
+                    StoreActivityRecord record = new StoreActivityRecord(
+                            resultSet.getInt(2),
+                            resultSet.getInt(1),
+                            resultSet.getInt(3),
+                            resultSet.getTimestamp(4),
+                            resultSet.getTimestamp(5)
+                    );
+                    data.add(record);
+                }
+
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Exception when selecting entities occured. " + e.getMessage());
+            return data;
+        }
+
+        return data;
+    }
 
     public DatabaseD(){}
 }

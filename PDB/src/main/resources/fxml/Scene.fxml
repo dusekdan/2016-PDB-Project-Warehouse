@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.canvas.Canvas?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane id="AnchorPane" maxHeight="500.0" maxWidth="500.0" minHeight="500.0" minWidth="500.0" prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.FXMLController">
@@ -16,28 +9,28 @@
       <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
         <tabs>
           <Tab text="Plánek">
-                <content >
-                    <fx:include source="Store.fxml" ></fx:include>
+                <content>
+                    <fx:include source="Store.fxml" />
                 </content>
                       </Tab>
-          <Tab text="Příjem/výdej">
+          <Tab text="Historie">
             <content>
-                    <fx:include source="Goods.fxml"></fx:include>
+                    <fx:include source="Goods.fxml" />
             </content>
           </Tab>
             <Tab text="Nastavení">
                <content>
-                   <fx:include source="Settings.fxml" ></fx:include>
+                   <fx:include source="Settings.fxml" />
                </content>
             </Tab>
             <Tab text="SQL">
                <content>
-                    <fx:include source="SQL.fxml" ></fx:include>
+                    <fx:include source="SQL.fxml" />
                </content>
             </Tab>
             <Tab text="Akce">
                <content>
-                   <fx:include source="Actions.fxml" ></fx:include>
+                   <fx:include source="Actions.fxml" />
 
                </content>
             </Tab>
