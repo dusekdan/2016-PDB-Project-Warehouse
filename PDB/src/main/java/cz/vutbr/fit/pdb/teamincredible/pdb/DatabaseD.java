@@ -2,6 +2,8 @@ package cz.vutbr.fit.pdb.teamincredible.pdb;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.controller.GoodsController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -903,6 +905,32 @@ public class DatabaseD {
 
         return data;
     }
+
+    public static ObservableList<GoodInRack> getGoodsInRack(int rackID) {
+        ObservableList<GoodInRack> ret = FXCollections.observableArrayList();
+        Statement stmt;
+        try{
+              stmt = DatabaseD.getConnection().createStatement();
+            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name FROM rack_goods INNER JOIN goods \n" +
+                    "ON rack_goods.goods_id=goods.goods_id\n" +
+                    "WHERE rack_goods.valid_to > CURRENT_TIMESTAMP AND rack_goods.racks_id = "+ rackID);
+            
+            while (executeQuery.next()) {
+                ret.add(new GoodInRack(
+                        executeQuery.getInt(2),
+                        executeQuery.getInt(3),
+                        executeQuery.getInt(1),
+                        executeQuery.getString(4)
+                ));
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return ret;
+    }
+
 
     public DatabaseD() {
     }

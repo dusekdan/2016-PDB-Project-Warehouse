@@ -5,7 +5,7 @@
  */
 package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
-
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,9 +27,9 @@ import javafx.util.Pair;
  *
  * @author Sucha
  */
-public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
+public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
 
-    public AskForGoodsAndCount(int rack) {
+    public AskForGoodsAndCount(int rack, boolean inserting) {
         setTitle("Počet zboží");
         setHeaderText("Zadejte počet kusů a druh zboží");
 
@@ -45,32 +45,46 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
 
         TextField username = new TextField();
         username.setPromptText("počet");
+        ComboBox cb;
+        if (!inserting) {
+            ObservableList<GoodInRack> data;
+            data = GoodInRack.loadData(rack);
+            while (data.isEmpty()) {// Fujky fuj
+                data = GoodInRack.loadData(rack);
+            }
 
-        ObservableList<GoodTypeRecord> data = GoodTypeRecord.getData();
-        while(data.isEmpty()) {// Fujky fuj
-            data = GoodTypeRecord.getData();
+            cb = new ComboBox(data);
+        } else {
+            ObservableList<GoodTypeRecord> data = GoodTypeRecord.getData();
+            while (data.isEmpty()) {// Fujky fuj
+                data = GoodTypeRecord.getData();
+            }
+
+            cb = new ComboBox(data);
         }
-        ComboBox cb = new ComboBox(data); 
-   //     ComboBox cb = new ComboBox(GoodTypeRecord.getData());
-        
-        
+        //     ComboBox cb = new ComboBox(GoodTypeRecord.getData());
+         cb.getSelectionModel().selectFirst();
         grid.add(new Label("Počet"), 0, 0);
         grid.add(username, 1, 0);
         grid.add(new Label("Zboží"), 0, 1);
         grid.add(cb, 1, 1);
 
         final Node loginButton = getDialogPane().lookupButton(loginButtonType);
-        loginButton.setDisable(true);
+        
 
-        username.textProperty().addListener((observable, oldValue, newValue) -> {
-            loginButton.setDisable(newValue.trim().isEmpty());
-        });
-
+        if (!inserting) {
+           
+            username.textProperty().addListener((observable, oldValue, newValue) -> {
+               //  System.err.println("disablee: "+(Integer.parseInt(newValue) <= ((GoodInRack) cb.getValue()).getCount())+Integer.parseInt(newValue)+"<="+((GoodInRack) cb.getValue()).getCount());
+                loginButton.setDisable(Integer.parseInt(newValue) > ((GoodInRack) cb.getValue()).getCount());
+            });
+            loginButton.setDisable(true);
+        }
         getDialogPane().setContent(grid);
 
         setResultConverter(dialogButton -> {
             if (dialogButton == loginButtonType) {
-                return new Pair<>(Integer.parseInt(username.getText()), (GoodTypeRecord)cb.getValue() );
+                return new Pair<>(Integer.parseInt(username.getText()), (GoodInRack) cb.getValue());
             }
             return null;
         });

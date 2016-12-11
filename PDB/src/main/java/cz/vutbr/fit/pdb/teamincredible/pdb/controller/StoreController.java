@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.List;
 
 import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController.DisplayInformation;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.AskForGoodsAndCount;
@@ -371,12 +372,12 @@ public class StoreController implements Initializable {
         int goodId;
         int count;
 
-        Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackId).showAndWait();
+        Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackId, true).showAndWait();
 
         if (!res.isPresent()) {
             return;
         } else {
-            goodId = res.get().getValue().goodIdProperty().getValue();
+            goodId = res.get().getValue().getGoodID();
             count = res.get().getKey();
         }
 
@@ -394,11 +395,11 @@ public class StoreController implements Initializable {
         int goodId;
         int count;
 
-        Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackId).showAndWait();
+        Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackId, false).showAndWait();
         if (!res.isPresent()) {
             return;
         } else {
-            goodId = res.get().getValue().goodIdProperty().getValue();
+            goodId = res.get().getValue().getGoodID();
             count = res.get().getKey();
         }
 
@@ -416,11 +417,11 @@ public class StoreController implements Initializable {
                 return;
             }
 
-            Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackFromId).showAndWait();
+            Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackFromId, false).showAndWait();
             if (!res.isPresent()) {
                 return;
             } else {
-                goodFromId = res.get().getValue().goodIdProperty().getValue();
+                goodFromId = res.get().getValue().getGoodID();
                 count = res.get().getKey();
             }
 

@@ -55,7 +55,7 @@ public class GoodTypeRecord {
 
     @Override
     public String toString() {
-         return "("+goodId+")"+goodName;
+         return goodName.getValue();
        //return super.toString(); //To change body of generated methods, choose Tools | Templates.
     }
     
