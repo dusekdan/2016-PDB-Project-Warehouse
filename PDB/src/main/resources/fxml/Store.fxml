@@ -22,7 +22,7 @@
                 <Button fx:id="refreshStoreButton" mnemonicParsing="false" onAction="#refreshStore" text="Znovunačíst obsah skladu" />
             </buttons>
             <BorderPane.margin>
-                <Insets bottom="30.0"/>
+                <Insets bottom="30.0" />
             </BorderPane.margin>
             <padding>
                 <Insets bottom="20.0" top="5.0" />
@@ -32,8 +32,9 @@
    <bottom>
       <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <buttons>
-          <Button fx:id="addGoodToRackBtn"  mnemonicParsing="false" text="Přidat zboží" onAction="#addGoodInRack"/>
-            <Button fx:id="removeGoodFromRackBtn"  mnemonicParsing="false" text="Odebrat zboží" onAction="#removeGoodFromRack" />
+          <Button fx:id="addGoodToRackBtn" mnemonicParsing="false" onAction="#addGoodInRack" text="Přidat zboží" />
+            <Button fx:id="removeGoodFromRackBtn" mnemonicParsing="false" onAction="#removeGoodFromRack" text="Odebrat zboží" />
+            <Button fx:id="removeGoodFromRackBtn1" mnemonicParsing="false" onAction="#moveGoodFromToRack" text="Přesunout zboží" />
         </buttons>
       </ButtonBar>
    </bottom>

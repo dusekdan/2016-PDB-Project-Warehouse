@@ -49,21 +49,26 @@ public class StoreController implements Initializable {
     @FXML
     private Button removeGoodFromRackBtn;
     public int itemsCount;
-    
-    private static int rackIdSelected;
 
-    
+    private static int rackIdSelected;
+    private int count;
+    private boolean movePrepare = true;
+    private int rackFromId;
+    private int goodFromId;
+    private int rackToId;
+    private int goodToId;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("StoreController init");
 
         final SwingNode swingNode = new CustomSwingNode();
-        swingNode.resize(500,500);
+        swingNode.resize(500, 500);
 
         createSwingContent(swingNode);
 
         StoreACP.getChildren().add(swingNode);
-        StoreACP.resize(500,500);
+        StoreACP.resize(500, 500);
         StoreACP.getStyleClass().add("storeAnchorPane");
 
         itemsCount = 5;
@@ -82,7 +87,7 @@ public class StoreController implements Initializable {
                     e.printStackTrace();
                 }
 
-                panel.setPreferredSize(new Dimension(500,500));
+                panel.setPreferredSize(new Dimension(500, 500));
 
                 swingNode.setContent(panel);
                 panel.repaint();
@@ -92,16 +97,13 @@ public class StoreController implements Initializable {
 
     public boolean addNewRack(ActionEvent actionEvent) throws SpatialConverters.JGeometry2ShapeException {
 
-        if (saveStore())
-        {
-            Rectangle rightUpCorner = new Rectangle(500-50, 0, 50, 50);
+        if (saveStore()) {
+            Rectangle rightUpCorner = new Rectangle(500 - 50, 0, 50, 50);
 
-            for (CustomShape shape : shapeList)
-            {
-                System.out.println("rightup corner: "+rightUpCorner.getBounds().toString());
-                System.out.println("shape: "+shape.getBoundingBox().toString());
-                if (rightUpCorner.getBounds().intersects(shape.getBoundingBox()))
-                {
+            for (CustomShape shape : shapeList) {
+                System.out.println("rightup corner: " + rightUpCorner.getBounds().toString());
+                System.out.println("shape: " + shape.getBoundingBox().toString());
+                if (rightUpCorner.getBounds().intersects(shape.getBoundingBox())) {
                     DisplayInformation("Není místo pro vložení nového stojanu.", "Uvolněte prosím místo v pravém horním rohu.");
                     return false;
                 }
@@ -110,31 +112,25 @@ public class StoreController implements Initializable {
             AvailableRacksView addNewRackDialog = new AvailableRacksView(itemsCount);
             Optional<CustomRackDefinition> newRack = addNewRackDialog.showAndWait();
 
-            if(insertNewRack(newRack))
+            if (insertNewRack(newRack)) {
                 return true;
-            else
-            {
+            } else {
                 DisplayInformation("Chyba při vkládání nového stojanu..", "Zkuste to prosím znovu.");
                 return false;
             }
 
-        }
-        else
-        {
+        } else {
             DisplayInformation("Chyba při vkládání nového stojanu.", "Zkuste to prosím znovu.");
             return false;
         }
 
     }
 
-
     public boolean saveStore(ActionEvent actionEvent) {
 
-        if (saveStore())
-        {
+        if (saveStore()) {
             return refreshStore(false);
-        }
-        else {
+        } else {
             DisplayInformation("Chyba při ukládání", "Sklad se nepodařilo uložit do databáze, zkuste to prosím znovu.");
             return false;
         }
@@ -142,8 +138,7 @@ public class StoreController implements Initializable {
 
     public boolean refreshStore(ActionEvent actionEvent) {
 
-        if (!SpatialViewerForStore.hasChanges())
-        {
+        if (!SpatialViewerForStore.hasChanges()) {
             DisplayInformation("Úspěch", "Obsah skladu je aktuální!");
             return true;
         }
@@ -151,8 +146,7 @@ public class StoreController implements Initializable {
         SaveChangesDialog confirm = new SaveChangesDialog(Alert.AlertType.CONFIRMATION);
         Optional<ButtonType> result = confirm.showAndWait();
 
-        if (result.isPresent() && result.get() == ButtonType.OK)
-        {
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             return refreshStore(true);
         }
 
@@ -163,10 +157,11 @@ public class StoreController implements Initializable {
     private boolean insertNewRack(Optional<CustomRackDefinition> newRack) {
 
         int rackType = -1;
-        if (newRack.isPresent())
+        if (newRack.isPresent()) {
             rackType = newRack.get().getId();
-        else
+        } else {
             return false;
+        }
         int id = -1;
 
         JGeometry rackGeometry = null;
@@ -175,9 +170,7 @@ public class StoreController implements Initializable {
 
             dbConnection.setAutoCommit(false);
             try (
-                    PreparedStatement getRackDefinitionStatement = dbConnection.prepareStatement("select * from rack_definitions where rack_defs_id=?");
-            )
-            {
+                    PreparedStatement getRackDefinitionStatement = dbConnection.prepareStatement("select * from rack_definitions where rack_defs_id=?");) {
 
                 getRackDefinitionStatement.setInt(1, rackType);
                 ResultSet resultSet = getRackDefinitionStatement.executeQuery();
@@ -191,15 +184,12 @@ public class StoreController implements Initializable {
                 }
                 resultSet.close();
 
-                if (rackGeometry!= null)
-                {
+                if (rackGeometry != null) {
                     //insert to database
                     //posun rackGeometry
                     String returnCols[] = {"RACKS_ID"};
                     try (
-                            PreparedStatement insertStatement = dbConnection.prepareStatement("insert into racks (racks_type, racks_geometry, racks_rotation) values (?, ?, ?)", returnCols);
-                    )
-                    {
+                            PreparedStatement insertStatement = dbConnection.prepareStatement("insert into racks (racks_type, racks_geometry, racks_rotation) values (?, ?, ?)", returnCols);) {
                         Point translationPoint = new Point(500 - rackGeometry.createShape().getBounds().width, 0);
                         rackGeometry = rackGeometry.affineTransforms(true, translationPoint.getX(), translationPoint.getY(), 0,
                                 false, null, 0, 0, 0,
@@ -235,14 +225,12 @@ public class StoreController implements Initializable {
                 return false;
             }
             dbConnection.commit();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
         return true;
     }
-
 
     private boolean saveStore() {
 
@@ -255,13 +243,11 @@ public class StoreController implements Initializable {
             // update všechny stojany
 
             try (
-                    PreparedStatement updateStatement = dbConnection.prepareStatement("UPDATE racks set racks_type=?, racks_geometry=?, racks_rotation=? where racks_id=?");
-            ) {
+                    PreparedStatement updateStatement = dbConnection.prepareStatement("UPDATE racks set racks_type=?, racks_geometry=?, racks_rotation=? where racks_id=?");) {
                 // update jeden po druhém
                 for (CustomShape shapeObject : shapeList) {
                     try (
-                            PreparedStatement selectStatement = dbConnection.prepareStatement("select * from racks where racks_type=?");
-                    ) {
+                            PreparedStatement selectStatement = dbConnection.prepareStatement("select * from racks where racks_type=?");) {
                         int affectedRows;
 
                         selectStatement.setInt(1, shapeObject.getRackTypeId());
@@ -296,9 +282,8 @@ public class StoreController implements Initializable {
                         updateStatement.setInt(3, shapeObject.getRotation());
                         updateStatement.setInt(4, shapeObject.getId());
 
-
                         affectedRows = updateStatement.executeUpdate();
-                        System.out.println("Number of affected rows: "+affectedRows);
+                        System.out.println("Number of affected rows: " + affectedRows);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -318,35 +303,35 @@ public class StoreController implements Initializable {
         return refreshStore(false);
     }
 
-
     private boolean refreshStore(boolean showMessage) {
 
         StoreACP.getChildren().remove(0);
 
         final SwingNode swingNode = new CustomSwingNode();
-        swingNode.resize(500,500);
+        swingNode.resize(500, 500);
 
         createSwingContent(swingNode);
 
         StoreACP.getChildren().add(swingNode);
 
-        if (showMessage)
+        if (showMessage) {
             DisplayInformation("Úspěch", "Databáze úspěšně obnovena!");
+        }
 
         return true;
     }
-    
+
     private int isSomethingSelected() {
         for (CustomShape rack : SpatialViewerForStore.shapeList) {
-            if(rack.isSelected()) {
-               // return 1; 
+            if (rack.isSelected()) {
+                // return 1; 
                 return rack.getId();
             }
         }
         return 0;
-        
+
     }
-    
+
     public void addGoodInRack() {
         int rackId = isSomethingSelected();
         if (rackId == 0) {
@@ -355,30 +340,30 @@ public class StoreController implements Initializable {
         }
         int goodId;
         int count;
-        
+
         Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackId).showAndWait();
-        
+
         if (!res.isPresent()) {
             return;
         } else {
             goodId = res.get().getValue().goodIdProperty().getValue();
             count = res.get().getKey();
         }
-        
+
         DatabaseD.InsertGoodIntoStorage(goodId, rackId, count);
-        DisplayInformation("Úspěch", "Do stojanu č. "+rackId+" bylo přidáno "+count+" kus/ů zboží "+goodId+".");
-        
+        DisplayInformation("Úspěch", "Do stojanu č. " + rackId + " bylo přidáno " + count + " kus/ů zboží " + goodId + ".");
+
     }
-    
+
     public void removeGoodFromRack() {
-          int rackId = isSomethingSelected();
+        int rackId = isSomethingSelected();
         if (rackId == 0) {
             DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
             return;
         }
         int goodId;
         int count;
-        
+
         Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackId).showAndWait();
         if (!res.isPresent()) {
             return;
@@ -386,11 +371,45 @@ public class StoreController implements Initializable {
             goodId = res.get().getValue().goodIdProperty().getValue();
             count = res.get().getKey();
         }
-        
+
         DatabaseD.RemoveGoodFromStorage(goodId, rackId, count);
-        DisplayInformation("Úspěch", "Ze stojanu č. "+rackId+" bylo odebráno "+count+" kus/ů zboží "+goodId+".");
+        DisplayInformation("Úspěch", "Ze stojanu č. " + rackId + " bylo odebráno " + count + " kus/ů zboží " + goodId + ".");
     }
-    
-    
+
+    public void moveGoodFromToRack() {
+        if (movePrepare) {
+            this.rackFromId = isSomethingSelected();
+            this.goodFromId = 0;
+
+            if (rackFromId == 0) {
+                DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
+                return;
+            }
+
+            Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackFromId).showAndWait();
+            if (!res.isPresent()) {
+                return;
+            } else {
+                goodFromId = res.get().getValue().goodIdProperty().getValue();
+                count = res.get().getKey();
+            }
+
+            //    DatabaseD.RemoveGoodFromStorage(goodId, rackId, count);
+            DisplayInformation("Úspěch", "Zvolte kam zboží přesunout");
+            
+            movePrepare = false;
+        } else {
+            this.rackToId = isSomethingSelected();
+            if (rackToId == 0) {
+                DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
+                return;
+            }
+         DatabaseD.MoveGoodFromTo(rackFromId, goodFromId, rackToId, goodFromId, count);
+         movePrepare = true;
+         
+         DisplayInformation("Úspěch", "Zboží přesunuto.");
+    }
+
+    }
 
 }

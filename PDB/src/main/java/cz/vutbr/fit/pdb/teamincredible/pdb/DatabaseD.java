@@ -780,6 +780,12 @@ public class DatabaseD {
         return true;
     }
     
+    public static boolean MoveGoodFromTo(int fromGID, int fromSID, int toGID, int toSID, int count) {
+        boolean removed = RemoveGoodFromStorage(fromGID, fromSID, count);
+        boolean inserted = InsertGoodIntoStorage(toGID, toSID, count);
+        return removed && inserted;
+    }
+    
     public static boolean RemoveGoodFromStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
         
