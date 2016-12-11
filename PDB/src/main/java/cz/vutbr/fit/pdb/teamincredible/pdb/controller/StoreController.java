@@ -183,8 +183,9 @@ public class StoreController implements Initializable {
                 {
                     //insert to database
                     //posun rackGeometry
+                    String returnCols[] = {"RACKS_ID"};
                     try (
-                            PreparedStatement insertStatement = dbConnection.prepareStatement("insert into racks (racks_type, racks_geometry, racks_rotation) values (?, ?, ?)");
+                            PreparedStatement insertStatement = dbConnection.prepareStatement("insert into racks (racks_type, racks_geometry, racks_rotation) values (?, ?, ?)", returnCols);
                     )
                     {
                         Point translationPoint = new Point(500 - rackGeometry.createShape().getBounds().width, 0);
@@ -249,6 +250,8 @@ public class StoreController implements Initializable {
                     try (
                             PreparedStatement selectStatement = dbConnection.prepareStatement("select * from racks where racks_type=?");
                     ) {
+                        int affectedRows;
+
                         selectStatement.setInt(1, shapeObject.getRackTypeId());
                         ResultSet resultSet = selectStatement.executeQuery();
 
@@ -281,7 +284,9 @@ public class StoreController implements Initializable {
                         updateStatement.setInt(3, shapeObject.getRotation());
                         updateStatement.setInt(4, shapeObject.getId());
 
-                        int affectedRows = updateStatement.executeUpdate();
+
+                        affectedRows = updateStatement.executeUpdate();
+                        System.out.println("Number of affected rows: "+affectedRows);
 
                     } catch (Exception e) {
                         e.printStackTrace();
