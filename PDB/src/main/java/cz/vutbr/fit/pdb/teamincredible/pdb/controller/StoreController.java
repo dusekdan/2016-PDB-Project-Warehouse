@@ -339,11 +339,12 @@ public class StoreController implements Initializable {
     private int isSomethingSelected() {
         for (CustomShape rack : SpatialViewerForStore.shapeList) {
             if(rack.isSelected()) {
-                return 1; 
-                // return rack.getId();
+               // return 1; 
+                return rack.getId();
             }
         }
         return 0;
+        
     }
     
     public void addGoodInRack() {
