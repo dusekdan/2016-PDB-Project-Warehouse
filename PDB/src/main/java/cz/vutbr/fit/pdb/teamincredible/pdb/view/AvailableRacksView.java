@@ -15,6 +15,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 
+import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForAvailableRacks.getSelectedRackDefinition;
+
 /**
  * Created by popko on 10/12/2016.
  */
@@ -51,7 +53,10 @@ public class AvailableRacksView extends Dialog<CustomRackDefinition>
         setResultConverter(
                 dialogButton -> {
                     if (dialogButton == btnConfirmType)
-                        return new CustomRackDefinition(1);
+                    {
+                        return getSelectedRackDefinition();
+                    }
+
                     else
                         return null;
                 }
@@ -100,7 +105,7 @@ public class AvailableRacksView extends Dialog<CustomRackDefinition>
 
             panel.setPreferredSize(new Dimension(rackCount*125+100, 125+100+100));
             swingNode.setContent(panel);
-
+            panel.repaint();
         });
 
     }
