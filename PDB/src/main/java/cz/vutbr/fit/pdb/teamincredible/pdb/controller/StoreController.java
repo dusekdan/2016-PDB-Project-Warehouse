@@ -25,6 +25,10 @@ import java.util.*;
 import java.util.List;
 
 import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController.DisplayInformation;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
+import cz.vutbr.fit.pdb.teamincredible.pdb.view.AskForGoodsAndCount;
+import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForAvailableRacks;
+import javafx.util.Pair;
 
 /**
  * Created by Sucha on 03.12.2016.
@@ -34,8 +38,15 @@ public class StoreController implements Initializable {
     @FXML
     private AnchorPane StoreACP;
     private Button AddNewRackButton;
+    @FXML
+    private Button addGoodToRackBtn;
+    @FXML
+    private Button removeGoodFromRackBtn;
     public int itemsCount;
+    
+    private static int rackIdSelected;
 
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("StoreController init");
@@ -124,5 +135,61 @@ public class StoreController implements Initializable {
         }
 
     }
+    
+    private int isSomethingSelected() {
+        for (CustomShape rack : SpatialViewerForStore.shapeList) {
+            if(rack.isSelected()) {
+                return 1; 
+                // return rack.getId();
+            }
+        }
+        return 0;
+    }
+    
+    public void addGoodInRack() {
+        int rackId = isSomethingSelected();
+        if (rackId == 0) {
+            DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
+            return;
+        }
+        int goodId;
+        int count;
+        
+        Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackId).showAndWait();
+        
+        if (!res.isPresent()) {
+            return;
+        } else {
+            goodId = res.get().getValue().goodIdProperty().getValue();
+            count = res.get().getKey();
+        }
+        
+        DatabaseD.InsertGoodIntoStorage(goodId, rackId, count);
+        DisplayInformation("Úspěch", "Do stojanu č. "+rackId+" bylo přidáno "+count+" kus/ů zboží "+goodId+".");
+        
+    }
+    
+    public void removeGoodFromRack() {
+          int rackId = isSomethingSelected();
+        if (rackId == 0) {
+            DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
+            return;
+        }
+        int goodId;
+        int count;
+        
+        Optional<Pair<Integer, GoodTypeRecord>> res = new AskForGoodsAndCount(rackId).showAndWait();
+        if (!res.isPresent()) {
+            return;
+        } else {
+            goodId = res.get().getValue().goodIdProperty().getValue();
+            count = res.get().getKey();
+        }
+        
+        DatabaseD.RemoveGoodFromStorage(goodId, rackId, count);
+        DisplayInformation("Úspěch", "Ze stojanu č. "+rackId+" bylo odebráno "+count+" kus/ů zboží "+goodId+".");
+    }
+    
+    
 
 }
