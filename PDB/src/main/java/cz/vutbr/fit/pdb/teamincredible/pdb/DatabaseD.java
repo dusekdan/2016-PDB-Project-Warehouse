@@ -56,6 +56,7 @@ public class DatabaseD {
         password = value;
     }
 
+    
     /**
      * Initializes connection to database
      */
@@ -72,6 +73,7 @@ public class DatabaseD {
             throw new ExceptionInInitializerError("Initial Database Connection not established. Sorry.");
         }
     }
+
 
     /**
      * Returns new instance of connection
@@ -98,6 +100,7 @@ public class DatabaseD {
         return connection;
     }
 
+
     /**
      * Closes connection to Oracle Data Source
      *
@@ -115,6 +118,7 @@ public class DatabaseD {
         }
     }
 
+
     /**
      * Tests whether connection to database could be established or not
      *
@@ -128,6 +132,7 @@ public class DatabaseD {
             return false;
         }
     }
+
 
     /**
      * Helper method returning inserted row ID (usefull for multipart queries
@@ -200,6 +205,7 @@ public class DatabaseD {
         return isInsertedBase;
     }
 
+
     /**
      * Method responsible for insertion and extraction of features for media part of the insert query
      * @param conn Connection to oracle data source
@@ -234,6 +240,7 @@ public class DatabaseD {
         }
         return true;
     }
+
 
     /**
      * Creates StillImage features for the OrdImage object
@@ -272,6 +279,7 @@ public class DatabaseD {
         return true;
     }
 
+
     /**
      * Saves OrdImage file to database
      *
@@ -293,6 +301,7 @@ public class DatabaseD {
             return false;
         }
     }
+
 
     /**
      * Loads image from file to OrdImage format
@@ -320,6 +329,7 @@ public class DatabaseD {
 
         return imgProxy;
     }
+
 
     /**
      * Inserts textual part of the GOODS table record
@@ -361,6 +371,7 @@ public class DatabaseD {
 
         return insertedRowId;
     }
+
 
     /**
      * Retrieves entities from GOODS table
@@ -567,11 +578,44 @@ public class DatabaseD {
      */
 
     /**
-     *
-     *
+     * Truncates table specified by name
+     * @param name String name identification of the table tobe truncated
+     */
+    private static void TruncateTableByName(String name)
+    {
+        try (Connection connection = getConnection())
+        {
+            try (Statement statement = connection.createStatement())
+            {
+                String query = "TRUNCATE TABLE "  + name + " CASCADE" ;
+                System.out.println("Trying to execute: " + query);
+                statement.executeUpdate(query);
+                connection.commit();
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("E: Unable to truncate table " + name +". Message: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Public method to be called when reinitialization of database is required
+     */
+    public static void InitializeDatabase()
+    {
+        initDBStruct();
+        initDBProcedures();
+        loadInitData();
+    }
+
+
+    /**
+     *  Initializes database structure for the application
      */
     @SuppressWarnings("SqlDialectInspection")
-    public static void initDBStruct() {
+    private static void initDBStruct() {
         //  https://github.com/rychly/tsql2lib/blob/master/tsql2sample/src/main/java/cz/vutbr/fit/tsql2sample/App.java
         Statement stmt = null;
         try {
@@ -667,7 +711,7 @@ public class DatabaseD {
     /**
      *  Initializes stored procedures that application requires in order to work properly
      */
-    public static void initDBProcedures()
+    private static void initDBProcedures()
     {
         try    (Connection connection = getConnection();
                 PreparedStatement statement = connection.prepareStatement("CREATE OR REPLACE \n" +
@@ -689,7 +733,11 @@ public class DatabaseD {
         }
     }
 
-    public static void loadInitData() {
+
+    /**
+     * Loads test data into tables
+     */
+    private static void loadInitData() {
         Statement stmt = null;
 
         try {
@@ -783,29 +831,11 @@ public class DatabaseD {
 
 
     /**
-     * Removes all records from table GOODS, remains silent on failure (logs on stdout)
+     * Inserts initial dummy data to goods table
+     * @return Boolean true on success, false otherwise
      */
-    private static void TruncateTableGoods()
-    {
-        try (Connection connection = getConnection())
-        {
-            try (PreparedStatement statement = connection.prepareStatement("TRUNCATE TABLE GOODS"))
-            {
-                statement.executeUpdate();
-            }
-        }
-        catch (Exception e)
-        {
-            System.out.println("E: Unable to truncate table GOODS. Message: " + e.getMessage());
-        }
-    }
-
     public static boolean InsertDummyGoodTypesData()
     {
-
-        // Delete contents of the GOODS table first
-        TruncateTableGoods();
-
         String pathToFile1 = MainApp.class.getResource("/images/civka1.jpg").getPath();
         Good good1 = new Good("Cívka", 250.00, pathToFile1, 1000);
 
@@ -833,7 +863,7 @@ public class DatabaseD {
         return InsertGood(good1) && InsertGood(good2) && InsertGood(good3)
                 && InsertGood(good4) && InsertGood(good5) && InsertGood(good6) && InsertGood(good7) && InsertGood(good8);
     }
-    
+
     public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
         
