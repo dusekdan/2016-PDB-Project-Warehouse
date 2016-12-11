@@ -14,7 +14,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -49,12 +48,14 @@ public class ActionsController implements Initializable{
     }
 
 
-
-
+    /**
+     * Action method for reloading contents of a tableview from database
+     */
     @FXML public void ReloadTableView()
     {
         tbvGoodTypes.setItems(GoodTypeRecord.getData());
     }
+
 
     /**
      * Shows good record detail and offers the possibility to remove the item as well
@@ -84,29 +85,7 @@ public class ActionsController implements Initializable{
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        // TODO: Remove this from final version
-        // Inform about Scene being loaded
-        System.out.println("D: Action controller loaded.");
-
-
-        // Not much to be initialized at the moment
-
-        // Initialize TableView data source
-        //List<Good> AllGoodTypes = DatabaseD.GetGoods();
         InitializeGoodTypesTableView();
-
-
-
-
-        // TODO: Remove this from final version
-        // Check out how can I select something
-        //List<Good> goods = DatabaseD.GetGoods();
-        //for (Good good : goods)
-        //{
-        //  System.out.println("Id:" + good.getId());
-        //  System.out.println("Name: " + good.getName());
-        //}
     }
 
 
@@ -171,8 +150,7 @@ public class ActionsController implements Initializable{
 
         if (result.isPresent() && result.get() == ButtonType.OK)
         {
-            DatabaseD.initDBStruct();
-            DatabaseD.loadInitData();  // TODO: insert model data
+            DatabaseD.InitializeDatabase();
 
             DisplayInformation("Úspěch", "Databáze úspěšně obnovena!");
         }
