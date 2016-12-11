@@ -6,36 +6,63 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.text.Text?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.StoreController">
     <center>
         <AnchorPane fx:id="StoreACP" prefHeight="500.0" prefWidth="500.0" BorderPane.alignment="CENTER">
             <BorderPane.margin>
-                <Insets top="15.0" />
+                <Insets top="50.0" />
             </BorderPane.margin>
         </AnchorPane>
     </center>
     <top>
-        <ButtonBar prefWidth="500.0" BorderPane.alignment="CENTER">
+        <ButtonBar prefHeight="40.0 " prefWidth="500.0" BorderPane.alignment="CENTER">
             <buttons>
-                <Button fx:id="addNewRackButton" mnemonicParsing="false" onAction="#addNewRack" text="Přidat nový stojan" />
-                <Button fx:id="saveStoreButton" mnemonicParsing="false" onAction="#saveStore" text="Uložit obsah skladu do databáze" />
-                <Button fx:id="refreshStoreButton" mnemonicParsing="false" onAction="#refreshStore" text="Znovunačíst obsah skladu" />
+                <ToggleButton mnemonicParsing="false" text="Spravovat sklad" fx:id="modificationModeButton" onAction="#modificationMode"/>
+                <ToggleButton mnemonicParsing="false" text="Dotazovat se nad skladem" fx:id="queryModeButton" onAction="#queryMode"/>
             </buttons>
-            <BorderPane.margin>
-                <Insets bottom="30.0" />
-            </BorderPane.margin>
             <padding>
-                <Insets bottom="20.0" top="5.0" />
+                <Insets top="5.0" bottom="70.0"/>
             </padding>
         </ButtonBar>
     </top>
    <bottom>
-      <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-        <buttons>
-          <Button fx:id="addGoodToRackBtn" mnemonicParsing="false" onAction="#addGoodInRack" text="Přidat zboží" />
-            <Button fx:id="removeGoodFromRackBtn" mnemonicParsing="false" onAction="#removeGoodFromRack" text="Odebrat zboží" />
-            <Button fx:id="removeGoodFromRackBtn1" mnemonicParsing="false" onAction="#moveGoodFromToRack" text="Přesunout zboží" />
-        </buttons>
-      </ButtonBar>
+       <VBox prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+           <children>
+               <ButtonBar fx:id="modificationButtonBar2" prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+                   <buttons>
+                       <Button prefWidth="165" fx:id="addGoodToRackBtn" mnemonicParsing="false" onAction="#addGoodInRack" text="Přidat zboží" />
+                       <Button prefWidth="165" fx:id="removeGoodFromRackBtn" mnemonicParsing="false" onAction="#removeGoodFromRack" text="Odebrat zboží" />
+                       <Button prefWidth="165" fx:id="removeGoodFromRackBtn1" mnemonicParsing="false" onAction="#moveGoodFromToRack" text="Přesunout zboží" />
+                   </buttons>
+                   <padding>
+                       <Insets bottom="5.0"/>
+                   </padding>
+               </ButtonBar>
+               <ButtonBar fx:id="modificationButtonBar" prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+                   <buttons>
+                       <Button prefWidth="165" mnemonicParsing="false" text="Přidat nový stojan" fx:id="addNewRackButton" onAction="#addNewRack"/>
+                       <Button prefWidth="165" mnemonicParsing="false" text="Uložit obsah skladu do databáze"  fx:id="saveStoreButton" onAction="#saveStore"/>
+                       <Button prefWidth="165" mnemonicParsing="false" text="Znovunačíst obsah skladu"  fx:id="refreshStoreButton" onAction="#refreshStore"/>
+                   </buttons>
+                   <padding>
+                       <Insets bottom="5.0"/>
+                   </padding>
+               </ButtonBar>
+               <ButtonBar fx:id="queryButtonBar" prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+                   <buttons>
+                       <Text  fx:id="textSelectQuery" text="Vyber typ dotazu" />
+                       <ComboBox prefWidth="165" fx:id="comboboxQuery" />
+                       <Button prefWidth="165" mnemonicParsing="false" text="Proveď dotaz"  fx:id="executeQueryButton" onAction="#executeQuery"/>
+                   </buttons>
+                   <padding>
+                       <Insets bottom="5.0"/>
+                   </padding>
+               </ButtonBar>
+           </children>
+       </VBox>
    </bottom>
 </BorderPane>
