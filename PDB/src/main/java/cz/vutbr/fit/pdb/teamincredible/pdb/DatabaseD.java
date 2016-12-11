@@ -3,12 +3,16 @@ package cz.vutbr.fit.pdb.teamincredible.pdb;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.pool.OracleDataSource;
 import oracle.ord.im.OrdImage;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,6 +22,8 @@ import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import javax.imageio.ImageIO;
 
 /**
  * Created by Dan on 12/2/2016 Contains logic for connection to database and
@@ -410,7 +416,11 @@ public class DatabaseD {
                     item.setName(resultSet.getString(3));
                     item.setPhoto(itemPhoto);
                     item.setPrice(resultSet.getDouble(10));
-                    
+
+
+                    item.setRealImageData(PrepareImageFromBlob(itemPhoto.getBlobContent()));
+
+
                     return item;
                 } else {
                     return null;
@@ -420,6 +430,27 @@ public class DatabaseD {
             System.out.println("Exception in selecting specific GOODS item occurred. Message: " + e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * From BLOB retrieved as Image data from database creates BufferedImage which then translates to Image (javafx package)
+     * @return Image converted image
+     */
+    private static Image PrepareImageFromBlob(Blob content)
+    {
+        BufferedImage image = null;
+        try (InputStream in = content.getBinaryStream()) {
+            image = ImageIO.read(in);
+        } catch (Exception e) {
+            System.out.println("E: Unable to retrieve blob content of a image file to display. Message: " + e.getMessage());
+        }
+
+        if (image != null)
+        {
+            return SwingFXUtils.toFXImage(image, null);
+        }
+
+        return null;
     }
 
 

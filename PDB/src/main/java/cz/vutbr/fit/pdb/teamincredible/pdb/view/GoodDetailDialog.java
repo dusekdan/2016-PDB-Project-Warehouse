@@ -7,6 +7,8 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 
@@ -27,17 +29,16 @@ public class GoodDetailDialog extends Dialog {
     private ButtonType btnCancelType = new ButtonType(DETAILS_CLOSE_BUTTON, ButtonBar.ButtonData.CANCEL_CLOSE);
     private GridPane grid;
 
-    private int referenceGid;
     private Good GoodItem;
     private Label namePlaceholder;
     private Label idPlaceholder;
     private Label volumePlaceholder;
     private Label pricePlaceholder;
+    private ImageView photoPlaceholder;
 
 
     public GoodDetailDialog(int id)
     {
-        this.referenceGid = id;
         GoodItem = DatabaseD.GetGoodById(id);
 
         InitDialog();
@@ -73,8 +74,26 @@ public class GoodDetailDialog extends Dialog {
         volumePlaceholder = new Label("Objem: " + String.valueOf(GoodItem.getVolume()));
         pricePlaceholder = new Label("Cena: " + String.valueOf(GoodItem.getPrice()));
 
-        // TODO: Image view or something with similar functionality
+
+        photoPlaceholder = new ImageView();
+        Image tmpImage = GoodItem.getRealImageData();
+
+        double height = tmpImage.getHeight();
+        double width = tmpImage.getHeight();
+
+        photoPlaceholder.setImage(tmpImage);
+
+        // Images that are too big should be hard-code minimized.
+        if (height > 500 || width > 500)
+        {
+            photoPlaceholder.setFitHeight(500);
+            photoPlaceholder.setFitWidth(500);
+            photoPlaceholder.setPreserveRatio(true);
+
+            System.out.println("D: Image had to be resized, because it is " + width + "x" + height + ".");
+        }
     }
+
 
     private void PrepareGrid()
     {
@@ -95,10 +114,10 @@ public class GoodDetailDialog extends Dialog {
         grid.add(new Label("1,3"), 1, 3);
 
         // Span OrdImage over these grid cells
-        grid.add(new Label("2,0"), 2,0);
-        grid.add(new Label("2,1"), 2,1);
-        grid.add(new Label("2,2"), 2,2);
-        grid.add(new Label("2,3"), 2,3);
+        grid.add(new Label("2,0"), 2,0, 2, 1);
+        grid.add(new Label("2,1"), 2,1, 2, 1);
+        grid.add(new Label("2,2"), 2,2, 2, 1);
+        grid.add(photoPlaceholder, 2,3, 2, 1);
     }
 
 
