@@ -610,6 +610,11 @@ public class DatabaseD {
         initDBStruct();
         initDBProcedures();
         loadInitData();
+
+        // Add some basic goods definitions
+        if (InsertDummyGoodTypesData())
+            System.out.println("D: Goods dummy data inserted successfully.");
+
     }
 
 
@@ -819,11 +824,6 @@ public class DatabaseD {
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
-
-
-            // Add some basic goods definitions
-            if (InsertDummyGoodTypesData())
-                System.out.println("D: Goods dummy data inserted successfully.");
 
             stmt.close();
         } catch (SQLException e) {
