@@ -404,7 +404,7 @@ public class StoreController implements Initializable {
                 DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
                 return;
             }
-         DatabaseD.MoveGoodFromTo(rackFromId, goodFromId, rackToId, goodFromId, count);
+         DatabaseD.MoveGoodFromTo(goodFromId,  rackFromId, goodFromId, rackToId, count);
          movePrepare = true;
          
          DisplayInformation("Úspěch", "Zboží přesunuto.");

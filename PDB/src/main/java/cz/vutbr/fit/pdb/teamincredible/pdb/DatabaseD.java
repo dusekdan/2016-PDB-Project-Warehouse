@@ -775,6 +775,7 @@ public class DatabaseD {
             }
 
         } catch (SQLException ex) {
+              System.err.println("Insert to "+stockID+" failed for good "+goodID+" and count "+count);
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
         return true;
@@ -819,6 +820,7 @@ public class DatabaseD {
             DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
 
         } catch (SQLException ex) {
+            System.err.println("Remove from "+stockID+" failed for good "+goodID+" and count "+count);
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
         
