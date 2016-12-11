@@ -19,7 +19,7 @@
             <TableColumn fx:id="goodName" prefWidth="75.0" text="Název zboží" />
             <TableColumn fx:id="goodVolume" prefWidth="75.0" text="Objem" />
             <TableColumn fx:id="goodPrice" prefWidth="75.0" text="Cena" />
-            <TableColumn fx:id="goodRemove" prefWidth="120.0" text="Odstranit zboží" />
+
 
         </columns>
       </TableView>

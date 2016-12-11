@@ -28,7 +28,7 @@
                     <fx:include source="SQL.fxml" />
                </content>
             </Tab>
-            <Tab text="Akce">
+            <Tab text="Správa zboží">
                <content>
                    <fx:include source="Actions.fxml" />
 
