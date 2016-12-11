@@ -392,7 +392,6 @@ public class DatabaseD {
 
         try (Connection connection = dataSource.getConnection())
         {
-            System.out.println("Connection datasource.getconnection tried.");
             try (
                     OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("SELECT * FROM Goods");
                     OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();
@@ -424,6 +423,47 @@ public class DatabaseD {
         }
 
         return entities;
+    }
+
+
+    /**
+     * Returns good record identified by id
+     * @param id Int identification of the record to be retrieved
+     * @return Corresponding Good object on success, null on false
+     */
+    public static Good GetGoodById(int id)
+    {
+        try (Connection connection = getConnection())
+        {
+            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("SELECT * FROM GOODS WHERE GOODS_ID = ?"))
+            {
+                statement.setInt(1, id);
+                OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();
+
+                if (resultSet.next())
+                {
+                    OrdImage itemPhoto = (OrdImage) resultSet.getORAData(4, OrdImage.getORADataFactory());
+
+                    Good item = new Good();
+                    item.setId(resultSet.getInt(1));
+                    item.setVolume(resultSet.getDouble(2));
+                    item.setName(resultSet.getString(3));
+                    item.setPhoto(itemPhoto);
+                    item.setPrice(resultSet.getDouble(10));
+
+                    return item;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Exception in selecting specific GOODS item occurred. Message: " + e.getMessage());
+            return null;
+        }
     }
 
 

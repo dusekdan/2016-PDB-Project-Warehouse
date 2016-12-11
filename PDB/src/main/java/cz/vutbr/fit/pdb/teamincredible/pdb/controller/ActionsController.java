@@ -4,6 +4,7 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodDialog;
+import cz.vutbr.fit.pdb.teamincredible.pdb.view.GoodDetailDialog;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.ImportDBAlert;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -50,17 +51,18 @@ public class ActionsController implements Initializable{
 
 
 
-    @FXML public void reloadTableView()
+    @FXML public void ReloadTableView()
     {
         tbvGoodTypes.setItems(GoodTypeRecord.getData());
     }
 
     /**
-     * Shows good record detail
+     * Shows good record detail and offers the possibility to remove the item as well
      */
     private void ShowGoodDetail(int id)
     {
-        // TODO: Implement this
+        GoodDetailDialog dialog = new GoodDetailDialog(id);
+        dialog.show();
     }
 
 
@@ -109,9 +111,7 @@ public class ActionsController implements Initializable{
                     // Action executed after double click
                     GoodTypeRecord rowData = row.getItem();
 
-                    System.out.println(rowData.goodIdProperty().toString());
-
-                    int GoodId = Integer.parseInt(rowData.goodIdProperty().toString());
+                    int GoodId = rowData.goodIdProperty().getValue();
 
                     ShowGoodDetail(GoodId);
                     System.out.println("D: Showing detail dialog for Good.Id=" + GoodId);
@@ -138,6 +138,7 @@ public class ActionsController implements Initializable{
             if(DatabaseD.InsertGood(goodValue.get())) {
                 System.out.println("Good item added successfully.");
                 DEBUG_DumpAddedItem(goodValue);
+                ReloadTableView();
             }
             else
                 System.out.println("Something failed during Good insertion. Feel free to debug the sh*t out of it.");

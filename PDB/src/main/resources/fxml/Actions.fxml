@@ -23,5 +23,5 @@
 
         </columns>
       </TableView>
-      <Button fx:id="btnRefresh" onMouseClicked="#reloadTableView" layoutX="14.0" layoutY="292.0" mnemonicParsing="false" text="Refresh" />
+      <Button fx:id="btnRefresh" onMouseClicked="#ReloadTableView" layoutX="14.0" layoutY="292.0" mnemonicParsing="false" text="Refresh" />
     </children></AnchorPane>
