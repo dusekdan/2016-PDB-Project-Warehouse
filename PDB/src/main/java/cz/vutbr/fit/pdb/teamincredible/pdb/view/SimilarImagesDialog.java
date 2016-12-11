@@ -12,9 +12,10 @@ import javafx.stage.Modality;
 import java.util.List;
 
 /**
- * Created by Dan on 12/11/2016.
+ * Created by Dan on 12/11/2016
+ * Contains definition of dialog displayed when "find similar images" option is selected
  */
-public class SimilarImagesDialog extends Dialog {
+class SimilarImagesDialog extends Dialog {
 
     private List<Good> similarGoods;
 
@@ -26,7 +27,11 @@ public class SimilarImagesDialog extends Dialog {
     private ImageView photoPlaceholder02;
     private ImageView photoPlaceholder03;
 
-    public SimilarImagesDialog(List<Good> similarGoods)
+    /**
+     * Constructor creating Dialog
+     * @param similarGoods List of Good objects that are similar to the item from which this dialog was invoked
+     */
+    SimilarImagesDialog(List<Good> similarGoods)
     {
         this.similarGoods = similarGoods;
 
@@ -40,12 +45,20 @@ public class SimilarImagesDialog extends Dialog {
 
     }
 
+
+    /**
+     * Encapsulated basic initialization of a dialog
+     */
     private void InitDialog()
     {
         setTitle("Podobné obrázky");
         initModality(Modality.APPLICATION_MODAL);
     }
 
+
+    /**
+     * Encapsulated grid definition and controls placement
+     */
     private void PrepareGrid()
     {
         grid = new GridPane();
@@ -62,6 +75,10 @@ public class SimilarImagesDialog extends Dialog {
         grid.add(photoPlaceholder03, 2, 1);
     }
 
+
+    /**
+     * Encapsulated dialog layout creation
+     */
     private void CreateDialogLayout()
     {
         getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
@@ -69,6 +86,10 @@ public class SimilarImagesDialog extends Dialog {
         LoadImagesControls();
     }
 
+
+    /**
+     * Loads images from similarGoods list to imageViews (and resize them if needed)
+     */
     private void LoadImagesControls()
     {
         int i = 0;
@@ -120,7 +141,4 @@ public class SimilarImagesDialog extends Dialog {
             i++;
         }
     }
-
-
-
 }
