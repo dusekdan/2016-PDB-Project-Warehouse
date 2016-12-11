@@ -104,7 +104,7 @@ public class AddGoodDialog extends Dialog<Good>
 
         pickedPhoto = new TextField();
         pickedPhoto.setText(ADD_GOOD_DIALOG_PHOTOPICKED_DEFAULTTEXT);
-        pickedPhoto.setEditable(true); // TODO: Decide whether we should let user edit the path by hand
+        pickedPhoto.setEditable(true);
 
         price = new TextField();
         price.setPromptText(ADD_GOOD_PRICE_PLACEHOLDER);

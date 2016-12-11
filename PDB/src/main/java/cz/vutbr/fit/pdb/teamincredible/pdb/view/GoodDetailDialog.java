@@ -35,6 +35,7 @@ public class GoodDetailDialog extends Dialog<Good> {
     private Label pricePlaceholder;
     private ImageView photoPlaceholder;
     private Button findSimilar;
+    private Button rotateImage;
 
 
     public GoodDetailDialog(int id)
@@ -87,6 +88,9 @@ public class GoodDetailDialog extends Dialog<Good> {
     }
 
 
+    /**
+     * Assigning action to find similar button
+     */
     private void AssignActionToFindSimilarButton()
     {
         findSimilar.setOnAction(
@@ -97,32 +101,37 @@ public class GoodDetailDialog extends Dialog<Good> {
                     List<Good> similarGoods = DatabaseD.GetSimilarGoods(GoodItem.getId());  // call made here only for debug purposes
                     System.out.println("Found: " + similarGoods.size());
 
+                    Dialog similarityDialog = new SimilarImagesDialog(similarGoods);
+                    similarityDialog.show();
+
                 }
         );
     }
 
+
     /**
-     * Describes action that is done delete good action button is pressed
-
-    private void AssignActionToDeleteGoodButton()
+     * Assigning action to rotate image by 90°
+     */
+    private void AssignActionToRotateImageButton()
     {
-        btnDeleteType.setOnAction(
+        rotateImage.setOnAction(
                 event -> {
-                    System.out.println("Select photo event fired...");
+                    System.out.println("D: Rotate image action fired...");
 
-                    // Extract stage from control that fired event
-                    Stage stage = Stage.class.cast(Control.class.cast(event.getSource()).getScene().getWindow());
+                    if (DatabaseD.RotateImage(GoodItem.getId())) {
+                        System.out.println("Image rotated successfully.");
 
-                    // Open file chooser
-                    FileChooser fc = new FileChooser();
-                    fc.setTitle(FILE_CHOOSER_HEADER_TEXT);
+                        // Update image placeholder to look like it updated from database
+                        photoPlaceholder.setRotate((photoPlaceholder.getRotate() + 90));
 
-                    // Set picked path to TextView control
-                    File pickedFile = fc.showOpenDialog(stage);
-                    pickedPhoto.setText(pickedFile.getAbsolutePath());
+                    }
+                    else {
+                        System.out.println("Unable to rotate image");
+                    }
                 }
         );
-    }*/
+    }
+
 
 
     private void DefineControls()
@@ -155,6 +164,11 @@ public class GoodDetailDialog extends Dialog<Good> {
         findSimilar = new Button();
         findSimilar.setText("Najdi podobné obrázky");
         AssignActionToFindSimilarButton();
+
+        // Prepare rotate image button
+        rotateImage = new Button();
+        rotateImage.setText("Orotovat obrázek o 90°");
+        AssignActionToRotateImageButton();
     }
 
 
@@ -168,20 +182,14 @@ public class GoodDetailDialog extends Dialog<Good> {
 
         // Add labels & controls to grid
         grid.add(namePlaceholder, 0, 0);
-        grid.add(new Label("1,0"), 1, 0);
         grid.add(idPlaceholder, 0, 1);
-        grid.add(new Label("1,1"), 1, 1);
         grid.add(volumePlaceholder, 0, 2);
-        grid.add(new Label("1,2"), 1, 2);
         grid.add(pricePlaceholder, 0, 3);
-        grid.add(new Label("1,3"), 1, 3);
 
         // Span OrdImage over these grid cells
-        grid.add(new Label("2,0"), 2,0, 2, 1);
-        grid.add(new Label("2,1"), 2,1, 2, 1);
-        grid.add(new Label("2,2"), 2,2, 2, 1);
         grid.add(photoPlaceholder, 2,3, 2, 1);
         grid.add(findSimilar, 3, 1);
+        grid.add(rotateImage, 3,2);
     }
 
 

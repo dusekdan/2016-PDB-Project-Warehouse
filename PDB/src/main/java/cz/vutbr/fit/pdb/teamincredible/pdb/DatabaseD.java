@@ -1,6 +1,5 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
-import cz.vutbr.fit.pdb.teamincredible.pdb.controller.GoodsController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 
@@ -89,12 +88,10 @@ public class DatabaseD {
         while (true) {
             try {
                 connection = dataSource.getConnection();
-                Thread.sleep(100);
                 break;
             } catch (SQLException e) {
+                try { Thread.sleep(100); dataSource.close(); } catch (Exception e1) { System.out.println("Sleeping error. Message: " + e1.getMessage()); }
                 System.out.println("Exception during retrieving connection to Oracle Data Source. Message: " + e.getMessage() + ". Proceeding to make another attempt on seizing the connection.");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
 
@@ -186,7 +183,11 @@ public class DatabaseD {
             return false;
         }
 
-        InsertGoodMediaPart(conn, affectedRowId, good);
+        if(!InsertGoodMediaPart(conn, affectedRowId, good))
+        {
+            System.out.println("E: Something went wrong during insertion of media part.");
+            return false;
+        }
 
         try {
             conn.commit();
@@ -418,7 +419,7 @@ public class DatabaseD {
                                     "sourceImage.GOODS_PHOTO_PC, 0.1, sourceImage.GOODS_PHOTO_TX, 0.3 ), targetImages.GOODS_PHOTO_SI) as similarity, targetImages.GOODS_ID, targetImages.GOODS_VOLUME, targetImages.GOODS_NAME, " +
                                     " targetImages.GOODS_PHOTO, targetImages.GOODS_PRICE FROM GOODS sourceImage, GOODS targetImages " +
                                     " WHERE sourceImage.GOODS_ID <> targetImages.GOODS_ID AND sourceImage.GOODS_ID = ? " +
-                                    " ORDER BY similarity ASC ")
+                                    " ORDER BY similarity ASC OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY")
             )
             {
                 statement.setInt(1, referenceId);
@@ -438,6 +439,8 @@ public class DatabaseD {
                     entity.setPhoto(entityPhoto);
                     entity.setPrice(resultSet.getDouble(8));
                     entity.setSimilarity(resultSet.getDouble("similarity"));
+
+                    entity.setRealImageData(PrepareImageFromBlob(entityPhoto.getBlobContent()));
 
                     entities.add(entity);
                 }
@@ -508,6 +511,30 @@ public class DatabaseD {
         catch (Exception e)
         {
             System.out.println("E: Unable to remove GOOD record from databse");
+            return false;
+        }
+    }
+
+
+    /**
+     * Calls stored procedure that executes image rotation for the record specified by ID
+     * @param goodId Int identification of the GOODS table record
+     * @return Boolean true on success, false otherwise
+     */
+    public static boolean RotateImage(int goodId)
+    {
+        try (Connection connection = getConnection())
+        {
+            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("CALL ImageRotation(?)"))
+            {
+                statement.setInt(1, goodId);
+
+                return statement.executeUpdate() == 0;
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("E: Exception in rotating image. Message: " + e.getMessage());
             return false;
         }
     }
@@ -636,6 +663,32 @@ public class DatabaseD {
         }
     }
 
+
+    /**
+     *  Initializes stored procedures that application requires in order to work properly
+     */
+    public static void initDBProcedures()
+    {
+        try    (Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement("CREATE OR REPLACE \n" +
+                        " PROCEDURE ImageRotation(GoodId NUMBER) \n" +
+                        " AS \n" +
+                        " EditedImage ORDIMAGE; \n" +
+                        " BEGIN \n" +
+                        " SELECT GOODS_PHOTO INTO EditedImage FROM GOODS WHERE GOODS_ID = GoodId FOR UPDATE; \n" +
+                        " EditedImage.process('rotate=90'); \n" +
+                        " UPDATE GOODS SET GOODS_PHOTO=EditedImage WHERE GOODS_ID = GoodId; \n" +
+                        " COMMIT; \n" +
+                        " END;\n"))
+        {
+            statement.execute();
+        }
+        catch (Exception e)
+        {
+            System.out.println("E: Unable to restore database procedures.");
+        }
+    }
+
     public static void loadInitData() {
         Statement stmt = null;
 
@@ -717,10 +770,68 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
 
+
+            // Add some basic goods definitions
+            if (InsertDummyGoodTypesData())
+                System.out.println("D: Goods dummy data inserted successfully.");
+
             stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+    }
+
+
+    /**
+     * Removes all records from table GOODS, remains silent on failure (logs on stdout)
+     */
+    private static void TruncateTableGoods()
+    {
+        try (Connection connection = getConnection())
+        {
+            try (PreparedStatement statement = connection.prepareStatement("TRUNCATE TABLE GOODS"))
+            {
+                statement.executeUpdate();
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("E: Unable to truncate table GOODS. Message: " + e.getMessage());
+        }
+    }
+
+    public static boolean InsertDummyGoodTypesData()
+    {
+
+        // Delete contents of the GOODS table first
+        TruncateTableGoods();
+
+        String pathToFile1 = MainApp.class.getResource("/images/civka1.jpg").getPath();
+        Good good1 = new Good("Cívka", 250.00, pathToFile1, 1000);
+
+        String pathToFile2 = MainApp.class.getResource("/images/conductor.jpg").getPath();
+        Good good2 = new Good("Kondenzátor", 150.00, pathToFile2, 400);
+
+        String pathToFile3 = MainApp.class.getResource("/images/head-set1.jpg").getPath();
+        Good good3 = new Good("Sluchátka KOSS", 500.00, pathToFile3, 1200);
+
+        String pathToFile4 = MainApp.class.getResource("/images/led-tv1.jpg").getPath();
+        Good good4 = new Good("Led Televize Sencor", 2000.00, pathToFile4, 16000);
+
+        String pathToFile5 = MainApp.class.getResource("/images/mp3-player1.jpg").getPath();
+        Good good5 = new Good("MP3 přehrávač Iriver", 400.00, pathToFile5, 2000);
+
+        String pathToFile6 = MainApp.class.getResource("/images/notebook.jpg").getPath();
+        Good good6 = new Good("Jetý notebook", 1200.00, pathToFile6, 8000);
+
+        String pathToFile7 = MainApp.class.getResource("/images/tablet.jpg").getPath();
+        Good good7 = new Good("Explozivní tablet Samsung", 800.00, pathToFile7, 4000);
+
+        String pathToFile8 = MainApp.class.getResource("/images/tablet2.jpg").getPath();
+        Good good8 = new Good("Podobný tablet Samsung", 800.00, pathToFile8, 4000);
+
+        return InsertGood(good1) && InsertGood(good2) && InsertGood(good3)
+                && InsertGood(good4) && InsertGood(good5) && InsertGood(good6) && InsertGood(good7) && InsertGood(good8);
     }
     
     public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
