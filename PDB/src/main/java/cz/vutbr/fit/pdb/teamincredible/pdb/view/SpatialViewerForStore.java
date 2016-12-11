@@ -44,7 +44,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
 
 
     public SpatialViewerForStore() throws SQLException {
-        filling = Color.gray;
+        filling = Color.ORANGE;
         System.out.println("Calling Ex2SpatialViewer constructor ...");
         // load the Shape objects from a db.
         try {
@@ -396,7 +396,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             filling = Color.gray;
             if (shapeObject.isSelected())
             {
-                filling = Color.pink;
+                filling = Color.RED;
             }
 
             g2D.setPaint(filling);

@@ -17,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 import oracle.jdbc.internal.OraclePreparedStatement;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
@@ -41,9 +42,25 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.sha
  */
 public class StoreController implements Initializable {
 
+
+    @FXML
+    private ButtonBar modificationButtonBar2;
+    @FXML
+    private ButtonBar modificationButtonBar;
+    @FXML
+    private ButtonBar queryButtonBar;
+    @FXML
+    private Button executeQueryButton;
+    @FXML
+    private ComboBox comboboxQuery;
+    @FXML
+    private Text textSelectQuery;
     @FXML
     private AnchorPane StoreACP;
-    private Button AddNewRackButton;
+    @FXML
+    private ToggleButton modificationModeButton;
+    @FXML
+    private ToggleButton queryModeButton;
     @FXML
     private Button addGoodToRackBtn;
     @FXML
@@ -73,6 +90,18 @@ public class StoreController implements Initializable {
 
         itemsCount = 5;
 
+        modificationModeButton.setSelected(true);
+        queryModeButton.setSelected(false);
+
+        queryButtonBar.setPrefHeight(0.0);
+        queryButtonBar.setDisable(true);
+        queryButtonBar.setVisible(false);
+        modificationButtonBar.setPrefHeight(40.0);
+        modificationButtonBar.setVisible(true);
+        modificationButtonBar.setDisable(false);
+        modificationButtonBar2.setPrefHeight(40.0);
+        modificationButtonBar2.setVisible(true);
+        modificationButtonBar2.setDisable(false);
     }
 
     private void createSwingContent(final SwingNode swingNode) {
@@ -300,7 +329,8 @@ public class StoreController implements Initializable {
             return false;
         }
 
-        return refreshStore(false);
+        return true;
+        //return refreshStore(false);
     }
 
     private boolean refreshStore(boolean showMessage) {
@@ -324,7 +354,7 @@ public class StoreController implements Initializable {
     private int isSomethingSelected() {
         for (CustomShape rack : SpatialViewerForStore.shapeList) {
             if (rack.isSelected()) {
-                // return 1; 
+                // return 1;
                 return rack.getId();
             }
         }
@@ -396,7 +426,7 @@ public class StoreController implements Initializable {
 
             //    DatabaseD.RemoveGoodFromStorage(goodId, rackId, count);
             DisplayInformation("Úspěch", "Zvolte kam zboží přesunout");
-            
+
             movePrepare = false;
         } else {
             this.rackToId = isSomethingSelected();
@@ -406,10 +436,79 @@ public class StoreController implements Initializable {
             }
          DatabaseD.MoveGoodFromTo(goodFromId,  rackFromId, goodFromId, rackToId, count);
          movePrepare = true;
-         
+
          DisplayInformation("Úspěch", "Zboží přesunuto.");
     }
 
+    }
+
+
+    public void modificationMode(ActionEvent actionEvent) {
+
+        refreshStore(false);
+
+
+        queryButtonBar.setPrefHeight(0.0);
+        queryButtonBar.setDisable(true);
+        queryButtonBar.setVisible(false);
+        modificationButtonBar.setPrefHeight(40.0);
+        modificationButtonBar.setVisible(true);
+        modificationButtonBar.setDisable(false);
+        modificationButtonBar2.setPrefHeight(40.0);
+        modificationButtonBar2.setVisible(true);
+        modificationButtonBar2.setDisable(false);
+
+
+        modificationModeButton.setSelected(true);
+        queryModeButton.setSelected(false);
+    }
+
+    public void queryMode(ActionEvent actionEvent) {
+        showQueryMode();
+
+        queryButtonBar.setPrefHeight(40.0);
+        queryButtonBar.setVisible(true);
+        queryButtonBar.setDisable(false);
+        modificationButtonBar.setPrefHeight(0.0);
+        modificationButtonBar.setVisible(false);
+        modificationButtonBar.setDisable(true);
+        modificationButtonBar2.setPrefHeight(0.0);
+        modificationButtonBar2.setVisible(false);
+        modificationButtonBar2.setDisable(true);
+
+        modificationModeButton.setSelected(false);
+        queryModeButton.setSelected(true);
+    }
+
+    private void showQueryMode() {
+
+        StoreACP.getChildren().remove(0);
+
+        final SwingNode swingNode = new CustomSwingNode();
+        swingNode.resize(500,500);
+
+        createSwingContentForQueries(swingNode);
+
+        StoreACP.getChildren().add(swingNode);
+    }
+
+    private void createSwingContentForQueries(SwingNode swingNode) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+
+                JPanel panel = null;
+                panel = new SpatialViewerForQueryingStore();
+
+                panel.setPreferredSize(new Dimension(500,500));
+
+                swingNode.setContent(panel);
+                panel.repaint();
+            }
+        });
+    }
+
+    public void executeQuery(ActionEvent actionEvent) {
     }
 
 }
