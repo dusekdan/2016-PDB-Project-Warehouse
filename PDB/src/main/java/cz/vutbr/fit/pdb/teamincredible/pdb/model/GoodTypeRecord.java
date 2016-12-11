@@ -1,6 +1,7 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.model;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,8 +17,8 @@ public class GoodTypeRecord {
     public static ObservableList<GoodTypeRecord> data = FXCollections.observableArrayList();
     public static ObservableList<GoodTypeRecord> getData() { LoadData(); return data; }     // Data fetch and refresh is ensured
 
-    private final SimpleStringProperty goodId;
-    public final SimpleStringProperty goodIdProperty() { return goodId; };
+    private final SimpleIntegerProperty goodId;
+    public final SimpleIntegerProperty goodIdProperty() { return goodId; };
 
     private final SimpleStringProperty goodName;
     public final SimpleStringProperty goodNameProperty() { return goodName; };
@@ -46,7 +47,7 @@ public class GoodTypeRecord {
 
     public GoodTypeRecord(int Id, String name, double volume, double price)
     {
-        goodId = new SimpleStringProperty(String.valueOf(Id));
+        goodId = new SimpleIntegerProperty(Id);
         goodName = new SimpleStringProperty(name);
         goodVolume = new SimpleStringProperty(String.valueOf(volume));
         goodPrice = new SimpleStringProperty(String.valueOf(price));
