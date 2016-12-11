@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
 
-
+/**
+ * Main application class that is launched upon application start
+ */
 public class MainApp extends Application {
 
+    // Helper properties for fetching username and password
     private String userName;
     private String password;
 
@@ -50,6 +53,10 @@ public class MainApp extends Application {
         DatabaseD.closeConnection();
     }
 
+
+    /**
+     * Makes sure credentials are passed to the application somehow
+     */
     private void EnsureDatabaseCredentials()
     {
         LoginDialog dialog = new LoginDialog();
@@ -75,6 +82,10 @@ public class MainApp extends Application {
         }
     }
 
+
+    /**
+     * Extracts credentials stored in resources under /config/credentials file
+     */
     private void ExtractCredentialsFromConfig()
     {
         BufferedReader bReader = new BufferedReader(new InputStreamReader(
@@ -109,6 +120,11 @@ public class MainApp extends Application {
         }
     }
 
+
+    /**
+     * Checks whether credentials are present in resource file
+     * @return Boolean true on credentials present, false otherwise
+     */
     private boolean AreCredentialsPresent()
     {
         BufferedReader bReader = new BufferedReader(new InputStreamReader(
@@ -159,5 +175,4 @@ public class MainApp extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
 }

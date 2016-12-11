@@ -17,8 +17,10 @@ import java.util.List;
  */
 class SimilarImagesDialog extends Dialog {
 
+    // List of Good objects that has similar image to the one currently displayed in this dialog
     private List<Good> similarGoods;
 
+    // Controls declaration
     private GridPane grid;
     private Label similarity01;
     private Label similarity02;
@@ -42,7 +44,6 @@ class SimilarImagesDialog extends Dialog {
         PrepareGrid();
 
         getDialogPane().setContent(grid);
-
     }
 
 

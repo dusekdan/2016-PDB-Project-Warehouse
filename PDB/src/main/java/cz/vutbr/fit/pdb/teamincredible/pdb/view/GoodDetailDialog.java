@@ -18,16 +18,17 @@ import java.util.List;
  */
 public class GoodDetailDialog extends Dialog<Good> {
 
+    // Constants for the dialog
     private static final String DETAILS_TITLE = "Zobrazit detail zboží";
     private static final String DETAILS_HEADER_TEXT = "Zboží";
     private static final String DETAILS_REMOVE_BUTTON = "Odstranit zboží";
     private static final String DETAILS_CLOSE_BUTTON = "Zavřít";
 
 
+    // Basic controls
     private ButtonType btnDeleteType = new ButtonType(DETAILS_REMOVE_BUTTON, ButtonBar.ButtonData.OK_DONE);
     private ButtonType btnCancelType = new ButtonType(DETAILS_CLOSE_BUTTON, ButtonBar.ButtonData.CANCEL_CLOSE);
     private GridPane grid;
-
     private Good GoodItem;
     private Label namePlaceholder;
     private Label idPlaceholder;
@@ -38,6 +39,10 @@ public class GoodDetailDialog extends Dialog<Good> {
     private Button rotateImage;
 
 
+    /**
+     * Parametrized constructor creating dialog for a specific Good ID
+     * @param id
+     */
     public GoodDetailDialog(int id)
     {
         GoodItem = DatabaseD.GetGoodById(id);
@@ -50,6 +55,9 @@ public class GoodDetailDialog extends Dialog<Good> {
     }
 
 
+    /**
+     * Deals with ways by which the dialog can be closed
+     */
     private void SetDialogClosingActions()
     {
         setResultConverter(
@@ -68,6 +76,10 @@ public class GoodDetailDialog extends Dialog<Good> {
         );
     }
 
+
+    /**
+     * Initializes basic properties of the dialog
+     */
     private void InitDialog()
     {
         setTitle(DETAILS_TITLE);
@@ -76,6 +88,9 @@ public class GoodDetailDialog extends Dialog<Good> {
     }
 
 
+    /**
+     * Creates dialog layout and set it to the scene
+     */
     private void CreateDialogLayout()
     {
         getDialogPane().getButtonTypes().addAll(btnCancelType, btnDeleteType);
@@ -133,14 +148,15 @@ public class GoodDetailDialog extends Dialog<Good> {
     }
 
 
-
+    /**
+     * Creates definitions for controls used in dialog
+     */
     private void DefineControls()
     {
         namePlaceholder = new Label(GoodItem.getName());
         idPlaceholder = new Label("ID: " + String.valueOf(GoodItem.getId()));
         volumePlaceholder = new Label("Objem: " + String.valueOf(GoodItem.getVolume()));
         pricePlaceholder = new Label("Cena: " + String.valueOf(GoodItem.getPrice()));
-
 
         photoPlaceholder = new ImageView();
         Image tmpImage = GoodItem.getRealImageData();
@@ -172,6 +188,9 @@ public class GoodDetailDialog extends Dialog<Good> {
     }
 
 
+    /**
+     * Prepares grid for the scene
+     */
     private void PrepareGrid()
     {
         // Define grid parameters
@@ -191,6 +210,4 @@ public class GoodDetailDialog extends Dialog<Good> {
         grid.add(findSimilar, 3, 1);
         grid.add(rotateImage, 3,2);
     }
-
-
 }

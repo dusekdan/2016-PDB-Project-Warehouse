@@ -18,18 +18,22 @@ public class GoodTypeRecord {
     public static ObservableList<GoodTypeRecord> getData() { LoadData(); return data; }     // Data fetch and refresh is ensured
 
     private final SimpleIntegerProperty goodId;
-    public final SimpleIntegerProperty goodIdProperty() { return goodId; };
+    public final SimpleIntegerProperty goodIdProperty() { return goodId; }
 
     private final SimpleStringProperty goodName;
-    public final SimpleStringProperty goodNameProperty() { return goodName; };
+    public final SimpleStringProperty goodNameProperty() { return goodName; }
 
     private final SimpleStringProperty goodVolume;
-    public final SimpleStringProperty goodVolumeProperty() { return goodVolume; };
+    public final SimpleStringProperty goodVolumeProperty() { return goodVolume; }
 
     private final SimpleStringProperty goodPrice;
-    public final SimpleStringProperty goodPriceProperty() { return goodPrice; };
+    public final SimpleStringProperty goodPriceProperty() { return goodPrice; }
 
-    public static void LoadData()
+
+    /**
+     * Loads data for table view
+     */
+    private static void LoadData()
     {
         if (!data.isEmpty())
             data.clear();
@@ -45,7 +49,14 @@ public class GoodTypeRecord {
     }
 
 
-    public GoodTypeRecord(int Id, String name, double volume, double price)
+    /**
+     * Constructor for GoodType record
+     * @param Id int identification of the record
+     * @param name String name of the record
+     * @param volume Double volume of the record
+     * @param price Double price of the record
+     */
+    private GoodTypeRecord(int Id, String name, double volume, double price)
     {
         goodId = new SimpleIntegerProperty(Id);
         goodName = new SimpleStringProperty(name);
@@ -53,12 +64,13 @@ public class GoodTypeRecord {
         goodPrice = new SimpleStringProperty(String.valueOf(price));
     }
 
+
+    /**
+     * Overide of the basic toString() method to retrieve data in specific format
+     * @return String formatted in a specific matter relevant to the implementation of the application
+     */
     @Override
     public String toString() {
          return goodName.getValue();
-       //return super.toString(); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    
-
 }
