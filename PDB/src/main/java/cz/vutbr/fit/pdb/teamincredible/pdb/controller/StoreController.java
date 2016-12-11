@@ -9,6 +9,8 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.view.AvailableRacksView;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.ImportDBAlert;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.SaveChangesDialog;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -90,18 +92,16 @@ public class StoreController implements Initializable {
 
         itemsCount = 5;
 
-        modificationModeButton.setSelected(true);
-        queryModeButton.setSelected(false);
+        setUIForModification();
 
-        queryButtonBar.setPrefHeight(0.0);
-        queryButtonBar.setDisable(true);
-        queryButtonBar.setVisible(false);
-        modificationButtonBar.setPrefHeight(40.0);
-        modificationButtonBar.setVisible(true);
-        modificationButtonBar.setDisable(false);
-        modificationButtonBar2.setPrefHeight(40.0);
-        modificationButtonBar2.setVisible(true);
-        modificationButtonBar2.setDisable(false);
+        comboboxQuery.getItems().addAll(
+                "Zobrazit zboží z vybrané plochy.",
+                "Spočítat nejkratší cestu ke zboží z vybraného místa.",
+                "Zobrazit zboží určité vlastnosti z vybrané plochy.",
+                "Vypočítat celkovou zastavěnou plochu skladu.",
+                "Vypočítat nejmenší možnou velikost skladu s těmito stojany.",
+                "Zobrazit všechny stojany obsahující zboží jisté vlastnosti."
+        );
     }
 
     private void createSwingContent(final SwingNode swingNode) {
@@ -296,10 +296,12 @@ public class StoreController implements Initializable {
                             return false;
                         }
 
+                        JGeometry rotationPoint = new JGeometry(shapeObject.getBoundingBox().getCenterX(), shapeObject.getBoundingBox().getCenterY(), JGeometry.GTYPE_POINT);
+
                         //posun rackGeometry tak, aby splnovalo translation v shapeObject
                         rackGeometry = rackGeometry.affineTransforms(true, shapeObject.getTranslation().getX(), shapeObject.getTranslation().getY(), 0,
                                 false, null, 0, 0, 0,
-                                false, null, null, 0, 0,
+                                true, rotationPoint, null, shapeObject.getRotation()*Math.toRadians(45), -1,
                                 false, 0, 0, 0, 0, 0, 0,
                                 false, null, null, 0,
                                 false, null, null);
@@ -447,37 +449,12 @@ public class StoreController implements Initializable {
 
         refreshStore(false);
 
-
-        queryButtonBar.setPrefHeight(0.0);
-        queryButtonBar.setDisable(true);
-        queryButtonBar.setVisible(false);
-        modificationButtonBar.setPrefHeight(40.0);
-        modificationButtonBar.setVisible(true);
-        modificationButtonBar.setDisable(false);
-        modificationButtonBar2.setPrefHeight(40.0);
-        modificationButtonBar2.setVisible(true);
-        modificationButtonBar2.setDisable(false);
-
-
-        modificationModeButton.setSelected(true);
-        queryModeButton.setSelected(false);
+        setUIForModification();
     }
 
     public void queryMode(ActionEvent actionEvent) {
         showQueryMode();
-
-        queryButtonBar.setPrefHeight(40.0);
-        queryButtonBar.setVisible(true);
-        queryButtonBar.setDisable(false);
-        modificationButtonBar.setPrefHeight(0.0);
-        modificationButtonBar.setVisible(false);
-        modificationButtonBar.setDisable(true);
-        modificationButtonBar2.setPrefHeight(0.0);
-        modificationButtonBar2.setVisible(false);
-        modificationButtonBar2.setDisable(true);
-
-        modificationModeButton.setSelected(false);
-        queryModeButton.setSelected(true);
+        setUIforQuerying();
     }
 
     private void showQueryMode() {
@@ -510,6 +487,36 @@ public class StoreController implements Initializable {
     }
 
     public void executeQuery(ActionEvent actionEvent) {
+        System.out.println("Selected query: " + comboboxQuery.getValue().toString());
     }
 
+    private void setUIForModification() {
+        modificationModeButton.setSelected(true);
+        queryModeButton.setSelected(false);
+
+        queryButtonBar.setPrefHeight(0.0);
+        queryButtonBar.setDisable(true);
+        queryButtonBar.setVisible(false);
+        modificationButtonBar.setPrefHeight(40.0);
+        modificationButtonBar.setVisible(true);
+        modificationButtonBar.setDisable(false);
+        modificationButtonBar2.setPrefHeight(40.0);
+        modificationButtonBar2.setVisible(true);
+        modificationButtonBar2.setDisable(false);
+    }
+
+    private void setUIforQuerying() {
+        queryButtonBar.setPrefHeight(40.0);
+        queryButtonBar.setVisible(true);
+        queryButtonBar.setDisable(false);
+        modificationButtonBar.setPrefHeight(0.0);
+        modificationButtonBar.setVisible(false);
+        modificationButtonBar.setDisable(true);
+        modificationButtonBar2.setPrefHeight(0.0);
+        modificationButtonBar2.setVisible(false);
+        modificationButtonBar2.setDisable(true);
+
+        modificationModeButton.setSelected(false);
+        queryModeButton.setSelected(true);
+    }
 }

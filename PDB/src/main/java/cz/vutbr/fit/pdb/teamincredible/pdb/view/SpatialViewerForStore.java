@@ -45,7 +45,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
 
     public SpatialViewerForStore() throws SQLException {
         filling = Color.ORANGE;
-        System.out.println("Calling Ex2SpatialViewer constructor ...");
         // load the Shape objects from a db.
         try {
             getExistingRacks(shapeList);
@@ -112,7 +111,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                             moveSelectedShape(e.getKeyCode());
                         break;
                     case KEY_ENTER:
-                        System.out.print("Key ENTER pressed...");
                         unselectAllShapes();
                         repaint();
                         break;
@@ -130,10 +128,8 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             private boolean isFreeWay(int keyCode) {
 
                 CustomShape selectedShape = getSelectedShapeObject();
-                System.out.println("isFreeWay start... Bounding box: "+selectedShape.getBoundingBox().toString());
                 if (selectedShape == null)
                 {
-                    System.out.println("No selected shape to move.");
                     return false;
                 }
                 boolean isFreeWay = true;
@@ -156,7 +152,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 }
                 futureBoundingBox.translate(translationPoint.x, translationPoint.y);
 
-                System.out.println("isFreeWay start... Bounding box: "+selectedShape.getBoundingBox().toString());
                 for (CustomShape objectShape : shapeList) {
 
                     if (objectShape.equals(selectedShape))
@@ -167,7 +162,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                         if (!(objectShape.getBoundingBox().intersects(futureBoundingBox)))
                         {
                             futureBoundingBox.translate(translationPoint.x, translationPoint.y);
-                            System.out.println("Bounding box: "+objectShape.getBoundingBox().toString() + " intersects: " + futureBoundingBox);
                             isFreeWay = false;
                         }
 
@@ -211,17 +205,12 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 switch (e.getButton())
                 {
                     case leftButton:
-                        System.out.println("Mouse clicked: LEFT button ");
-                        System.out.print("Clicked on point: " + e.getPoint().toString());
                         selectOrUnselectShape(e.getPoint());
                         break;
                     case BUTTON2:
-                        System.out.println("Mouse clicked: BUTTON2");
                         break;
                     case rightButton:
-                        System.out.println("Mouse clicked: RIGHT button ");
                         //here comes the rotation
-                        System.out.print("Clicked on point: " + e.getPoint().toString());
                         try {
                             rotateRackOnPoint(e.getPoint());
                         } catch (SQLException e1) {
@@ -230,7 +219,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
 
                         break;
                     case NOBUTTON:
-                        System.out.println("Mouse clicked: NOBUTTON");
                         break;
                 }
             }
@@ -241,10 +229,8 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 int i = 0;
                 for (CustomShape shapeObject : shapeList) {
 
-                    System.out.println("... bounding box: " + shapeObject.getBoundingBox().toString());
                     if (shapeObject.getBoundingBox().contains(clickedPoint))
                     {
-                        System.out.println("Selecting shape...");
                         shapeObject.setSelected();
                         i++;
                     }
@@ -252,7 +238,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 if (i == 0)
                 {
                     unselectAllShapes();
-                    System.out.println("Unselecting all shapes");
                 }
                 //if (i != 1)
                 //{
@@ -265,13 +250,10 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             private void rotateRackOnPoint(Point clickedPoint) throws SQLException {
 
                 System.out.println();
-                System.out.println("Trying to rotate shape...");
                 for (CustomShape shapeObject : shapeList) {
 
-                    System.out.println("... bounding box: " + shapeObject.getBoundingBox().toString());
                     if (shapeObject.getBoundingBox().contains(clickedPoint))
                     {
-                        System.out.println("Trying to rotate shape...  yes: "+ shapeObject.getShape().toString());
                         rotateShape(shapeObject);
                     }
                 }
@@ -281,15 +263,12 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             private void rotateShape(CustomShape shape) {
 
                 //rotace může být osmkrát
-                System.out.println("Rotation before: "+ shape.getRotation());
                 shape.incrementRotation();
-                System.out.println("Rotation after increment: "+ shape.getRotation());
                 hasChanges = true;
                 repaint();
             }
         });
 
-        System.out.println("Constructor of Ex2SpatialViewer ended ...");
     }
 
     private void deleteShape() {
@@ -320,13 +299,9 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
 
                     JGeometry jGeometry = JGeometry.load(image);
 
-                    System.out.println("Loading shape from database ... shape: "+ jGeometry.toString());
-
                     // get a Shape object (the object drawable into Java GUI)
                     Shape shape = SpatialConverters.jGeometry2Shape(jGeometry);
-                    System.out.println("...Loading from database ... getBounds() of shape x: "+ shape.getBounds().x + " y: " +  shape.getBounds().y);
                     CustomShape shapeObject = new CustomShape(shape, rackTypeId, rackId);
-                    System.out.println("...Loading from database ... boundingBox() of shape: "+ shapeObject.getBoundingBox().toString());
 
                     // add the Shape object into a list of drawable objects
                     if (shape != null) {
@@ -379,10 +354,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 g2D.rotate(Math.toRadians(45), shapeObject.getBoundingBox().x + shapeObject.getBoundingBox().width/3, shapeObject.getBoundingBox().y + shapeObject.getBoundingBox().height/4);
                 rotation--;
             }
-
-            System.out.println("Translating from: [" + shapeObject.getBoundingBox().x + ", " + shapeObject.getBoundingBox().x + "]");
             Point translationPoint = shapeObject.getTranslation();
-            System.out.println("Translating to: "+shapeObject.getTranslation().toString());
             g2D.translate(translationPoint.x, translationPoint.y);
 
             filling = Color.ORANGE;
