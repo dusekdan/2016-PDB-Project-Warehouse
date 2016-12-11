@@ -19,6 +19,8 @@ public class MainApp extends Application {
     private String userName;
     private String password;
 
+    public static final int UNIT = 10;
+
 
     @Override
     public void start(Stage stage) throws Exception {

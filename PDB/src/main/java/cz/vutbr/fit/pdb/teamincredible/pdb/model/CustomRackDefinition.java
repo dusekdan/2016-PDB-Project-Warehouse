@@ -53,4 +53,15 @@ public class CustomRackDefinition {
     {
         this.selected = false;
     }
+
+    public void recalculateBoundingBox(double x, double y)
+    {
+        this.boundingBox.translate(((int) x), ((int) y));
+    }
+
+    public void refreshBoundingBox()
+    {
+        this.boundingBox = this.shape.getBounds();
+    }
+
 }

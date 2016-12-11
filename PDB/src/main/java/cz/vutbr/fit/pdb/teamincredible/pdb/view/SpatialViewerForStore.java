@@ -1,15 +1,13 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomRackDefinition;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomShape;
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.SpatialConverters;
 import oracle.spatial.geometry.JGeometry;
 
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,6 +16,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
+import static cz.vutbr.fit.pdb.teamincredible.pdb.MainApp.UNIT;
 import static java.awt.event.MouseEvent.*;
 
 /**
@@ -39,7 +38,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
     public static final int KEY_LEFT = 37;
     public static final int KEY_RIGHT = 39;
     public static final int KEY_ENTER = 10;
-    private int basicUnit = 5;
+    public static final int KEY_DELETE = 127;
     public static boolean hasChanges;
 
 
@@ -55,7 +54,16 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             e.printStackTrace();
         }
 
+        shapeList.sort(Comparator.comparing(CustomShape::getId));
         hasChanges = false;
+
+        this.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                repaint();
+            }
+        });
 
         this.addKeyListener(new KeyAdapter() {
             @Override
@@ -75,22 +83,22 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 switch (keyCode)
                 {
                     case KEY_DOWN:
-                        if (shape.moveDown(basicUnit))
+                        if (shape.moveDown())
                             hasChanges = true;
                         repaint();
                         break;
                     case KEY_UP:
-                        if (shape.moveUp(basicUnit))
+                        if (shape.moveUp())
                             hasChanges = true;
                         repaint();
                         break;
                     case KEY_LEFT:
-                        if (shape.moveLeft(basicUnit))
+                        if (shape.moveLeft())
                             hasChanges = true;;
                         repaint();
                         break;
                     case KEY_RIGHT:
-                        if (shape.moveRight(basicUnit))
+                        if (shape.moveRight())
                             hasChanges = true;;
                         repaint();
                         break;
@@ -116,6 +124,10 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                         unselectAllShapes();
                         repaint();
                         break;
+                    case KEY_DELETE:
+                        deleteShape();
+                        repaint();
+                        break;
                     default:
                         System.out.print("Key *"+ e.getKeyCode() +"* pressed...");
                         break;
@@ -124,7 +136,9 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             }
 
             private boolean isFreeWay(int keyCode) {
+
                 CustomShape selectedShape = getSelectedShapeObject();
+                System.out.println("isFreeWay start... Bounding box: "+selectedShape.getBoundingBox().toString());
                 if (selectedShape == null)
                 {
                     System.out.println("No selected shape to move.");
@@ -136,27 +150,35 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 switch (keyCode)
                 {
                     case KEY_DOWN:
-                        translationPoint = new Point(0, basicUnit);
+                        translationPoint = new Point(0, UNIT);
                         break;
                     case KEY_UP:
-                        translationPoint = new Point(0, 0 - basicUnit);
+                        translationPoint = new Point(0, 0 - UNIT);
                         break;
                     case KEY_RIGHT:
-                        translationPoint = new Point(basicUnit, 0);
+                        translationPoint = new Point(UNIT, 0);
                         break;
                     case KEY_LEFT:
-                        translationPoint = new Point(0 - basicUnit, 0);
+                        translationPoint = new Point(0 - UNIT, 0);
                         break;
                 }
                 futureBoundingBox.translate(translationPoint.x, translationPoint.y);
+
+                System.out.println("isFreeWay start... Bounding box: "+selectedShape.getBoundingBox().toString());
                 for (CustomShape objectShape : shapeList) {
 
                     if (objectShape.equals(selectedShape))
                         continue;
                     if (objectShape.getBoundingBox().intersects(futureBoundingBox))
                     {
-                        System.out.println("Bounding box: "+objectShape.getBoundingBox().toString() + " intersects: " + futureBoundingBox);
-                        isFreeWay = false;
+                        futureBoundingBox.translate(0 - translationPoint.x, 0 - translationPoint.y);
+                        if (!(objectShape.getBoundingBox().intersects(futureBoundingBox)))
+                        {
+                            futureBoundingBox.translate(translationPoint.x, translationPoint.y);
+                            System.out.println("Bounding box: "+objectShape.getBoundingBox().toString() + " intersects: " + futureBoundingBox);
+                            isFreeWay = false;
+                        }
+
                     }
                 }
                 futureBoundingBox.translate(0 - translationPoint.x, 0 - translationPoint.y);
@@ -235,11 +257,16 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                         i++;
                     }
                 }
-                if (i != 1)
+                if (i == 0)
                 {
                     unselectAllShapes();
-                    System.out.println("UnselectingShape");
+                    System.out.println("Unselecting all shapes");
                 }
+                //if (i != 1)
+                //{
+                //    unselectAllShapes();
+                //    System.out.println("UnselectingShape");
+                //}
                 repaint();
             }
 
@@ -273,10 +300,19 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         System.out.println("Constructor of Ex2SpatialViewer ended ...");
     }
 
+    private void deleteShape() {
+
+        CustomShape deletedShape = getSelectedShapeObject();
+        if (deletedShape != null)
+        {
+            deletedShape.delete();
+        }
+    }
+
     private void getExistingRacks(java.util.List<CustomShape> shapeList) throws SQLException {
 
         // create a OracleDataSource instance
-
+        shapeList.clear();
         try (Connection connection = DatabaseD.getConnection())
         {
             try (
@@ -287,6 +323,8 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                 while (resultSet.next()) {
                     // get a JGeometry object (the Java representation of SDO_GEOMETRY data)
                     byte[] image = resultSet.getBytes("racks_geometry");
+                    int rackId = resultSet.getInt("racks_id");
+                    int rackTypeId = resultSet.getInt("racks_type");
 
                     JGeometry jGeometry = JGeometry.load(image);
 
@@ -295,7 +333,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
                     // get a Shape object (the object drawable into Java GUI)
                     Shape shape = SpatialConverters.jGeometry2Shape(jGeometry);
                     System.out.println("...Loading from database ... getBounds() of shape x: "+ shape.getBounds().x + " y: " +  shape.getBounds().y);
-                    CustomShape shapeObject = new CustomShape(shape);
+                    CustomShape shapeObject = new CustomShape(shape, rackTypeId, rackId);
                     System.out.println("...Loading from database ... boundingBox() of shape: "+ shapeObject.getBoundingBox().toString());
 
                     // add the Shape object into a list of drawable objects
@@ -334,6 +372,9 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         for (CustomShape shapeObject : shapeList) {
             //System.out.println("Drawing shape: "+ shapeObject.getShape().toString());
             // draw an interior of the shape
+            if (shapeObject.isDeleted())
+                continue;
+
             g2D.setPaint(filling);
 
             int rotation = shapeObject.getRotation();

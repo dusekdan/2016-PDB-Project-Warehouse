@@ -66,7 +66,7 @@ public class DatabaseD {
             dataSource.setURL("jdbc:oracle:thin:@//berta.fit.vutbr.cz:1526/pdb1");
             dataSource.setUser(userName);
             dataSource.setPassword(password);
-            
+
             System.out.println("D: Database initialized successfully.");
         } catch (SQLException e) {
             System.out.print("Database initialization failed. Error code: " + e.getErrorCode());
@@ -97,7 +97,7 @@ public class DatabaseD {
                 e.printStackTrace();
             }
         }
-        
+
         return connection;
     }
 
@@ -140,9 +140,10 @@ public class DatabaseD {
      * be returned
      * @return
      */
-    private static int GetInsertedRowID(PreparedStatement statement) {
+    public static int GetInsertedRowID(PreparedStatement statement)
+    {
         int rowId = -1;
-        
+
         try (ResultSet resultSet = statement.getGeneratedKeys()) {
             if (resultSet.next()) {
                 rowId = resultSet.getInt(1);
@@ -150,13 +151,14 @@ public class DatabaseD {
         } catch (Exception e) {
             System.out.println("Failed to retrieve ID of inserted record. Message: " + e.getMessage());
         }
-        
+
         return rowId;
     }
 
     /*
      * Good record insertion, update and modification section
      */
+
     /**
      * Inserts Good object into database, both media and text part of it
      *
@@ -166,7 +168,7 @@ public class DatabaseD {
     public static boolean InsertGood(Good good) {
         // One connection for the whole insertion logic
         Connection conn = getConnection();
-        
+
         boolean isInsertedBase = false;
         int affectedRowId; // Serves as identification of the record to be further updated with SI_* functions
 
@@ -174,7 +176,7 @@ public class DatabaseD {
         try {
             // Configure connection not to autocommit
             conn.setAutoCommit(false);
-            
+
             affectedRowId = InsertGoodBase(good);
             if (affectedRowId != -1) {
                 isInsertedBase = true;
@@ -183,9 +185,9 @@ public class DatabaseD {
             System.out.println("Unable to save basic part to database. Message: " + e.getMessage());
             return false;
         }
-        
+
         InsertGoodMediaPart(conn, affectedRowId, good);
-        
+
         try {
             conn.commit();
             conn.setAutoCommit(true);
@@ -193,14 +195,12 @@ public class DatabaseD {
             System.out.println("Failed to insert Good record to the database. Message: " + e.getMessage());
             return false;
         }
-        
+
         return isInsertedBase;
     }
 
     /**
-     * Method responsible for insertion and extraction of features for media
-     * part of the insert query
-     *
+     * Method responsible for insertion and extraction of features for media part of the insert query
      * @param conn Connection to oracle data source
      * @param affectedRowId int identification of the row to which insertion of
      * media part corresponds
@@ -219,11 +219,11 @@ public class DatabaseD {
 
             // Prepare file content to be saved to database
             imgProxy = LoadImageFromFile(good.getImgFilePath(), selectStatement);
-            
+
             if (!SaveImageToDatabase(conn, imgProxy, affectedRowId)) {
                 return false;
             }
-            
+
             if (!CreateImageFeatures(conn, affectedRowId)) {
                 return false;
             }
@@ -267,7 +267,7 @@ public class DatabaseD {
             System.out.println("Creation of features failed. Message: " + e.getMessage());
             return false;
         }
-        
+
         return true;
     }
 
@@ -285,7 +285,7 @@ public class DatabaseD {
             updateStatement.setORAData(1, imageProxy);
             updateStatement.setInt(2, itemId);
             updateStatement.executeUpdate();
-            
+
             return true;
         } catch (Exception e) {
             System.out.println("Error occurred during saving image to database. Message: " + e.getMessage());
@@ -316,7 +316,7 @@ public class DatabaseD {
         // Load image from file
         imgProxy.loadDataFromFile(path);
         imgProxy.setProperties();
-        
+
         return imgProxy;
     }
 
@@ -329,9 +329,9 @@ public class DatabaseD {
      */
     private static int InsertGoodBase(Good good) throws SQLException {
         String returnCols[] = {"GOODS_ID"};
-        
+
         int insertedRowId = -1;
-        
+
         try (PreparedStatement statement = getConnection().prepareStatement(
                 "INSERT INTO GOODS (GOODS_VOLUME, GOODS_NAME, GOODS_PHOTO, GOODS_PRICE) VALUES (?, ?, ordsys.ordimage.init(), ?)",
                 returnCols
@@ -339,16 +339,16 @@ public class DatabaseD {
             statement.setDouble(1, good.getVolume());
             statement.setString(2, good.getName());
             statement.setDouble(3, good.getPrice());
-            
+
             try {
                 int affectedRows = statement.executeUpdate();
-                
+
                 if (affectedRows == 0) {
                     System.out.println("Inserting record failed. No rows affected.");
                 }
-                
+
                 insertedRowId = GetInsertedRowID(statement);
-                
+
             } catch (Exception e) {
                 System.out.println("Updating prepared statement error. Message: " + e.getMessage());
                 return -1;
@@ -357,7 +357,7 @@ public class DatabaseD {
             System.out.println("Something went wrong when base inserting Good item. Message: " + e.getMessage());
             return -1;
         }
-        
+
         return insertedRowId;
     }
 
@@ -369,7 +369,7 @@ public class DatabaseD {
      */
     public static List<Good> GetGoods() {
         List<Good> entities = new ArrayList<>();
-        
+
         try (Connection connection = dataSource.getConnection()) {
             try (
                     OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("SELECT * FROM Goods");
@@ -380,14 +380,14 @@ public class DatabaseD {
 
                     // Retrieve raw data and cast it to OrdImage
                     OrdImage entityPhoto = (OrdImage) resultSet.getORAData(4, OrdImage.getORADataFactory());
-                    
+
                     Good entity = new Good();
                     entity.setId(resultSet.getInt(1));          // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, etc.)
                     entity.setVolume(resultSet.getDouble(2));
                     entity.setName(resultSet.getString(3));
                     entity.setPhoto(entityPhoto);
                     entity.setPrice(resultSet.getDouble(10));
-                    
+
                     entities.add(entity);
                 }
             }
@@ -395,7 +395,7 @@ public class DatabaseD {
             System.out.println("Exception in selecting GOODS entities occurred. Message: " + e.getMessage());
             return entities;
         }
-        
+
         return entities;
     }
 
@@ -462,10 +462,10 @@ public class DatabaseD {
             try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("SELECT * FROM GOODS WHERE GOODS_ID = ?")) {
                 statement.setInt(1, id);
                 OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();
-                
+
                 if (resultSet.next()) {
                     OrdImage itemPhoto = (OrdImage) resultSet.getORAData(4, OrdImage.getORADataFactory());
-                    
+
                     Good item = new Good();
                     item.setId(resultSet.getInt(1));
                     item.setVolume(resultSet.getDouble(2));
@@ -569,7 +569,7 @@ public class DatabaseD {
             } catch (SQLException e) {
                 System.err.println(e.getMessage());
             }
-            
+
             stmt.execute("CREATE TABLE racks (\n"
                     + "racks_id NUMBER(10) GENERATED BY DEFAULT ON NULL AS IDENTITY NOT NULL,"
                     + "racks_type NUMBER(10),"
@@ -578,7 +578,7 @@ public class DatabaseD {
                     + "CONSTRAINT racks_pk PRIMARY KEY (racks_id)"
                     + ")"
             );
-            
+
             stmt.execute("CREATE TABLE rack_definitions ( "
                     + "rack_defs_id NUMBER(10) GENERATED BY DEFAULT ON NULL AS IDENTITY NOT NULL,"
                     + "rack_defs_name VARCHAR(32),"
@@ -589,7 +589,7 @@ public class DatabaseD {
                     + "CONSTRAINT rack_definitions_pk PRIMARY KEY (rack_defs_id)"
                     + ")"
             );
-            
+
             stmt.execute("CREATE TABLE goods ( "
                     + "goods_id NUMBER(10) GENERATED BY DEFAULT ON NULL AS IDENTITY NOT NULL,"
                     + "goods_volume NUMBER(32,2),"
@@ -604,7 +604,7 @@ public class DatabaseD {
                     + "CONSTRAINT goods_pk PRIMARY KEY (goods_id)"
                     + ")"
             );
-            
+
             stmt.execute("CREATE TABLE rack_goods ("
                     + "racks_id NUMBER(10) NOT NULL,"
                     + "goods_id NUMBER(10) NOT NULL,"
@@ -614,7 +614,7 @@ public class DatabaseD {
                     + "CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id, valid_from, valid_to)"
                     + " )"
             );
-            
+
             stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_rack"
                     + "  FOREIGN KEY (racks_id)"
                     + "  REFERENCES racks(racks_id)");
@@ -629,19 +629,19 @@ public class DatabaseD {
                     + "  FOREIGN KEY (racks_type)"
                     + "  REFERENCES rack_definitions(rack_defs_id)");
             System.out.println("alter3");
-            
+
             stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
-    
+
     public static void loadInitData() {
         Statement stmt = null;
-        
+
         try {
             stmt = DatabaseD.getConnection().createStatement();
-            
+
             stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)"
                     + ""
                     + "values (1, 'L', 1000, 10, 30, \n"
@@ -649,74 +649,74 @@ public class DatabaseD {
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,10,   10,10,   10,30,   0,30,  0,0)\n"
                     + "	))");
-            
+
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (1, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(30,30,  50,30,  50,40,   40,40,   40,60,   30,60,  30,30)\n"
                     + "	), 3)");
-            
+
             stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values (2, 'T', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,10,   20,10,   20,20,   10,20,  10,30,   0,30,  0,0)\n"
                     + "	))");
-            
+
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (2, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(100,20,  110,20,  110,30,   120,30,   120,40,   110,40,  110,50,   100,50,  100,20)\n"
                     + "	), 0)");
-            
+
             stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values (3, 'II', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,30,   0,30,   0,0)\n"
                     + "	))");
-            
+
             stmt.execute("   insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (3, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
                     + "	), 0)");
-            
+
             stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values (4, 'III', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,40,   0,40,   0,0)\n"
                     + "	))");
-            
+
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('I', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,20,   0,20,   0,0)\n"
                     + "	))");
-            
+
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('O', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 4), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(10,0,  20,10,  10,20)\n"
                     + "	))");
-            
+
             stmt.execute(" insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('OO', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 4), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(15,0,  30,15,  15,30)\n"
                     + "	))");
-            
+
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('D', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
-            
+
             stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -736,11 +736,11 @@ public class DatabaseD {
             
             if (executeQuery.next()) {
                 newCount = executeQuery.getInt(1) + count;
-                
+
                 executeQuery = stmt.executeQuery("SELECT COUNT(rack_goods_count) FROM rack_goods WHERE"
                         + " VALID_TO > CURRENT_TIMESTAMP"
                         + " AND goods_id = " + goodID + " AND racks_ID = " + stockID);
-                
+
                 int numResults = 0;
                 if (executeQuery.next()) {
                     numResults = executeQuery.getInt(1);
@@ -762,9 +762,9 @@ public class DatabaseD {
                         + "CURRENT_TIMESTAMP,"
                         + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                         + ")");
-                
+
             } else {
-                
+
                 stmt.execute("INSERT INTO rack_goods VALUES("
                         + stockID + ","
                         + goodID + ","
@@ -773,7 +773,7 @@ public class DatabaseD {
                         + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                         + ")");
             }
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -786,7 +786,7 @@ public class DatabaseD {
         try {
             
             stmt = DatabaseD.getConnection().createStatement();
-            
+
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
                     + " VALID_TO > CURRENT_TIMESTAMP"
                     + " AND goods_id = " + goodID + " AND racks_ID = " + stockID);
@@ -811,7 +811,7 @@ public class DatabaseD {
             }
             
             DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -827,7 +827,7 @@ public class DatabaseD {
     public static ObservableList<StoreActivityRecord> GetStoreHistory() {
         
         ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
-        
+
         try (Connection connection = dataSource.getConnection()) {
             try (
                     PreparedStatement statement = connection.prepareStatement("SELECT * FROM rack_goods");
@@ -842,12 +842,12 @@ public class DatabaseD {
                     );
                     data.add(record);
                 }
-                
+
             }
         } catch (Exception e) {
             return data;
         }
-        
+
         return data;
     }
 
@@ -861,7 +861,7 @@ public class DatabaseD {
      */
     public static ObservableList<StoreActivityRecord> GetStoreHistory(Calendar date) {
         ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
-        
+
         try (Connection connection = dataSource.getConnection()) {
             Timestamp today = new Timestamp(date.getTimeInMillis());
             Calendar clone = (Calendar) date.clone();
@@ -876,7 +876,7 @@ public class DatabaseD {
                         statement.setTimestamp(1, today);
                         statement.setTimestamp(2, tomorrow);
                         ResultSet resultSet = statement.executeQuery();
-                        
+
                         while (resultSet.next()) {
                             StoreActivityRecord record = new StoreActivityRecord(
                                     resultSet.getInt(2),
@@ -887,15 +887,15 @@ public class DatabaseD {
                             );
                             data.add(record);
                         }
-                        
+
                     }
         } catch (Exception e) {
             return data;
         }
-        
+
         return data;
     }
-    
+
     public DatabaseD() {
     }
 }

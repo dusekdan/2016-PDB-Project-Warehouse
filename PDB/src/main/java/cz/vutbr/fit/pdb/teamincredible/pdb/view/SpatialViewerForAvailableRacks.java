@@ -7,6 +7,10 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.SpatialConverters;
 import oracle.spatial.geometry.JGeometry;
 
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.sql.Connection;
@@ -14,7 +18,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.leftButton;
 
 /**
  * Created by popko on 10/12/2016.
@@ -22,7 +29,7 @@ import java.util.List;
 public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
 
     public Color filling;
-    public List<CustomRackDefinition> racksList;
+    public static List<CustomRackDefinition> racksList;
 
     public SpatialViewerForAvailableRacks() throws SQLException {
 
@@ -39,7 +46,54 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
         }
 
         System.out.println("Loading from database finished... Rack list: "+ racksList.toString());
+        racksList.sort(Comparator.comparing(CustomRackDefinition::getId));
 
+
+        this.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                repaint();
+            }
+        });
+
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                switch (e.getButton()) {
+                    case leftButton:
+                        System.out.println("Mouse clicked: LEFT button ");
+                        System.out.print("Clicked on point: " + e.getPoint().toString());
+                        selectOrUnselectShape(e.getPoint());
+                        break;
+                }
+            }
+        });
+
+    }
+
+    private void selectOrUnselectShape(Point point) {
+
+        System.out.println();
+        unselectAllRacks();
+        int i = 0;
+        for (CustomRackDefinition shapeObject : racksList) {
+
+            System.out.println("... bounding box: " + shapeObject.getBoundingBox().toString());
+            if (shapeObject.getBoundingBox().contains(point))
+            {
+                System.out.println("Selecting shape...");
+                shapeObject.setSelected();
+                i++;
+            }
+        }
+        if (i != 1)
+        {
+            unselectAllRacks();
+            System.out.println("UnselectingShape");
+        }
+        repaint();
     }
 
     private void getAvailableRacks() throws SQLException  {
@@ -109,15 +163,19 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
         }
 
 
+
+        AffineTransform old = g2D.getTransform();
+
         System.out.println("Rack list: "+ racksList.toString());
 
+        int i = 0;
+        int translation = 0;
         // draw the Shape objects
         for (CustomRackDefinition shapeObject : racksList) {
             //System.out.println("Drawing shape: "+ shapeObject.getShape().toString());
             // draw an interior of the shape
             g2D.setPaint(filling);
 
-            AffineTransform old = g2D.getTransform();
 
             filling = Color.blue;
             if (shapeObject.isSelected())
@@ -125,19 +183,44 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
                 filling = Color.pink;
             }
 
-            System.out.println("Drawing existing rack definition from databaase ...");
-
             g2D.setPaint(filling);
             g2D.fill(shapeObject.getShape());
             // draw a boundary of the shape
             g2D.setPaint(Color.BLACK);
             g2D.draw(shapeObject.getShape());
 
-            g2D.setTransform(old);
+            shapeObject.refreshBoundingBox();
+            shapeObject.recalculateBoundingBox(translation, 0);
+
+            translation += shapeObject.getBoundingBox().width + 10;
+
+            g2D.translate(shapeObject.getBoundingBox().width + 10,0);
+
+            i++;
         }
 
+        g2D.setTransform(old);
 
 
+    }
+
+
+    public void unselectAllRacks()
+    {
+        for (CustomRackDefinition shapeObject : racksList)
+        {
+            shapeObject.unSelect();
+        }
+    }
+
+    public static CustomRackDefinition getSelectedRackDefinition()
+    {
+        for (CustomRackDefinition shapeObject : racksList)
+        {
+            if (shapeObject.isSelected())
+                return shapeObject;
+        }
+        return null;
     }
 
 }
