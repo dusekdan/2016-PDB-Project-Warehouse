@@ -159,7 +159,7 @@ public class ActionsController implements Initializable{
         if (result.isPresent() && result.get() == ButtonType.OK)
         {
             DatabaseD.initDBStruct();
-            // DatabaseD.loadInitData  // TODO: create model data
+            DatabaseD.loadInitData();  // TODO: insert model data
 
             DisplayInformation("Úspěch", "Databáze úspěšně obnovena!");
         }
