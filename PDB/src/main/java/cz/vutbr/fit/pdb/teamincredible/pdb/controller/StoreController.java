@@ -183,25 +183,18 @@ public class StoreController implements Initializable {
                 {
                     //insert to database
                     //posun rackGeometry
-
-                    Point translationPoint = new Point(500 - rackGeometry.createShape().getBounds().width, 0);
-                    rackGeometry = rackGeometry.affineTransforms(true, translationPoint.getX(), translationPoint.getY(), 0,
-                            false, null, 0, 0, 0,
-                            false, null, null, 0, 0,
-                            false, 0, 0, 0, 0, 0, 0,
-                            false, null, null, 0,
-                            false, null, null);
-
-                    Shape newShape = SpatialConverters.jGeometry2Shape(rackGeometry);
-
-                    CustomShape shapeObject = new CustomShape(newShape, rackType, id);
-
-                    shapeList.add(shapeObject);
-
                     try (
                             PreparedStatement insertStatement = dbConnection.prepareStatement("insert into racks (racks_type, racks_geometry, racks_rotation) values (?, ?, ?)");
                     )
                     {
+                        Point translationPoint = new Point(500 - rackGeometry.createShape().getBounds().width, 0);
+                        rackGeometry = rackGeometry.affineTransforms(true, translationPoint.getX(), translationPoint.getY(), 0,
+                                false, null, 0, 0, 0,
+                                false, null, null, 0, 0,
+                                false, 0, 0, 0, 0, 0, 0,
+                                false, null, null, 0,
+                                false, null, null);
+
                         STRUCT rackGeometrySDO = JGeometry.store(rackGeometry, dbConnection);
 
                         insertStatement.setInt(1, rackType);
@@ -215,6 +208,12 @@ public class StoreController implements Initializable {
                         }
 
                         id = DatabaseD.GetInsertedRowID(insertStatement);
+
+                        Shape newShape = SpatialConverters.jGeometry2Shape(rackGeometry);
+
+                        CustomShape shapeObject = new CustomShape(newShape, rackType, id);
+
+                        shapeList.add(shapeObject);
                     }
                 }
 
@@ -233,7 +232,7 @@ public class StoreController implements Initializable {
 
 
     private boolean saveStore() {
-        List<CustomShape> shapeList = SpatialViewerForStore.returnAllRacksFromStore();
+
         JGeometry rackGeometry = null;
         int id = -1;
 
@@ -303,10 +302,8 @@ public class StoreController implements Initializable {
     }
 
 
-
     private boolean refreshStore(boolean showMessage) {
 
-        shapeList.clear();
         StoreACP.getChildren().remove(0);
 
         final SwingNode swingNode = new CustomSwingNode();
