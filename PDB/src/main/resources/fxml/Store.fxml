@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-
-<?import javafx.geometry.Insets?>
-<BorderPane fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.StoreController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.StoreController">
     <center>
         <AnchorPane fx:id="StoreACP" prefHeight="500.0" prefWidth="500.0" BorderPane.alignment="CENTER">
             <BorderPane.margin>
@@ -18,9 +17,9 @@
     <top>
         <ButtonBar prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
             <buttons>
-                <Button mnemonicParsing="false" text="Přidat nový stojan" fx:id="addNewRackButton" onAction="#addNewRack"/>
-                <Button mnemonicParsing="false" text="Uložit obsah skladu do databáze"  fx:id="saveStoreButton" onAction="#saveStore"/>
-                <Button mnemonicParsing="false" text="Znovunačíst obsah skladu"  fx:id="refreshStoreButton" onAction="#refreshStore"/>
+                <Button fx:id="addNewRackButton" mnemonicParsing="false" onAction="#addNewRack" text="Přidat nový stojan" />
+                <Button fx:id="saveStoreButton" mnemonicParsing="false" onAction="#saveStore" text="Uložit obsah skladu do databáze" />
+                <Button fx:id="refreshStoreButton" mnemonicParsing="false" onAction="#refreshStore" text="Znovunačíst obsah skladu" />
             </buttons>
             <BorderPane.margin>
                 <Insets />
@@ -30,4 +29,12 @@
             </padding>
         </ButtonBar>
     </top>
+   <bottom>
+      <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <buttons>
+          <Button fx:id="addGoodToRackBtn"  mnemonicParsing="false" text="Přidat zboží" onAction="#addGoodInRack"/>
+            <Button fx:id="removeGoodFromRackBtn"  mnemonicParsing="false" text="Odebrat zboží" onAction="#removeGoodFromRack" />
+        </buttons>
+      </ButtonBar>
+   </bottom>
 </BorderPane>

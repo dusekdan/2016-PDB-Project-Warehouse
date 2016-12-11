@@ -53,4 +53,12 @@ public class GoodTypeRecord {
         goodPrice = new SimpleStringProperty(String.valueOf(price));
     }
 
+    @Override
+    public String toString() {
+         return "("+goodId+")"+goodName;
+       //return super.toString(); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
+
 }

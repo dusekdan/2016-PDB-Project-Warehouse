@@ -8,14 +8,22 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.util.Pair;
 
 /**
  * FXML Controller class
@@ -25,7 +33,7 @@ import javafx.scene.chart.XYChart;
 public class HistoryChartController implements Initializable {
 
     @FXML private LineChart historyChart;
-    @FXML private CategoryAxis axisX;
+    @FXML private NumberAxis axisX;
     @FXML private NumberAxis axisY;
     
     
@@ -35,31 +43,43 @@ public class HistoryChartController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Calendar begin = (Calendar) StoreActivityRecord.currentDay.clone();
-        Calendar date = (Calendar) StoreActivityRecord.currentDay.clone();
-        Calendar end = (Calendar) StoreActivityRecord.currentDay.clone();
-        end.add(Calendar.DATE, 1);
         
         
-        SimpleDateFormat format = new SimpleDateFormat("dd. MMMM, HH:mm");
+        SimpleDateFormat format = new SimpleDateFormat("dd. MMMM");
         
         historyChart.setTitle(
                 "Obsazení skladu dne " 
                         + format.format(begin.getTime())
         );
         
+        historyChart.setAxisSortingPolicy(LineChart.SortingPolicy.X_AXIS);
+
         XYChart.Series history = new XYChart.Series();
         history.setName("Obsazenost");
-      
+        
+       HashMap<String, XYChart.Series> series = new HashMap();
+        
         for (StoreActivityRecord record : StoreActivityRecord.data) {
-            history.getData().add(new XYChart.Data(record.fromProperty().getValue(), record.countProperty().getValue()));
+            series.put(record.stockIDProperty().getValue()+record.goodIDProperty().getValue(),
+                            new XYChart.Series()
+            );
+            
+        
         }
+        axisX.clipProperty();
+        
+        SortedList<StoreActivityRecord> sorted = StoreActivityRecord.data.sorted((StoreActivityRecord t, StoreActivityRecord t1) -> (t.fromTS.compareTo(t1.fromTS)));
+
+        sorted.forEach((record) -> {
+            XYChart.Series get = series.get(record.stockIDProperty().getValue()+record.goodIDProperty().getValue());
+            get.getData().add(new XYChart.Data(record.fromTS.getTime(), record.countProperty().getValue()));
+        });
         
         
         
-        
-        
-        historyChart.getData().add(history);
+            historyChart.getData().addAll(series.values());
         
     }    
+    
     
 }

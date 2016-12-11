@@ -50,6 +50,7 @@ public class StoreActivityRecord {
     
     
     private final SimpleStringProperty goodID;
+    public final Timestamp fromTS;
     public final SimpleStringProperty goodIDProperty() {
         return goodID;
     }
@@ -84,6 +85,7 @@ public class StoreActivityRecord {
         this.stockID = new SimpleStringProperty(String.valueOf(stockID)); // for now
         this.numOfGood = new SimpleIntegerProperty(numOfGood);
    
+        this.fromTS = from;
         
         Date obj = new Date(from.getTime());
         this.from = new SimpleStringProperty(format.format(obj));

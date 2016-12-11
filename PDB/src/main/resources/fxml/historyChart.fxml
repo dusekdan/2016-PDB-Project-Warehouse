@@ -13,7 +13,7 @@
    <children>
       <LineChart fx:id="historyChart" layoutX="50.0" title="Graf obsazení skladu" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
         <xAxis>
-          <CategoryAxis side="BOTTOM" fx:id="historyChartX"  />
+          <NumberAxis side="BOTTOM" fx:id="historyChartX"  />
         </xAxis>
         <yAxis>
           <NumberAxis side="LEFT" fx:id="historyChartY" />
