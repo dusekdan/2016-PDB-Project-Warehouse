@@ -7,13 +7,13 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="318.0" prefWidth="410.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="508.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController">
     <children>
         <Button fx:id="btnImportDB" layoutX="312.0" layoutY="16.0" mnemonicParsing="false" onAction="#importTestDB" text="Importovat testovací databázi" AnchorPane.rightAnchor="10.0" />
         <Label layoutX="22.0" layoutY="20.0" prefHeight="17.0" prefWidth="98.0" text="Stav databáze" AnchorPane.leftAnchor="20.0" />
         <Canvas fx:id="cnvDbImported" height="13.0" layoutX="113.0" layoutY="22.0" width="61.0" AnchorPane.leftAnchor="120.0" />
       <Button layoutX="14.0" layoutY="47.0" mnemonicParsing="false" onAction="#addGoodType" text="Přidat typ zboží" />
-      <TableView fx:id="tbvGoodTypes" layoutX="14.0" layoutY="89.0" prefHeight="200.0" prefWidth="382.0">
+      <TableView fx:id="tbvGoodTypes" layoutX="14.0" layoutY="89.0" prefHeight="200.0" prefWidth="382.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
         <columns>
             <TableColumn fx:id="goodId" prefWidth="20.0" text="ID" />
             <TableColumn fx:id="goodName" prefWidth="75.0" text="Název zboží" />
@@ -23,5 +23,5 @@
 
         </columns>
       </TableView>
-      <Button fx:id="btnRefresh" onMouseClicked="#ReloadTableView" layoutX="14.0" layoutY="292.0" mnemonicParsing="false" text="Refresh" />
+      <Button fx:id="btnRefresh" layoutX="14.0" layoutY="292.0" mnemonicParsing="false" onMouseClicked="#ReloadTableView" text="Refresh" />
     </children></AnchorPane>
