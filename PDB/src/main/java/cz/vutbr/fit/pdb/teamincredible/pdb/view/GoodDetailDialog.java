@@ -3,21 +3,20 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import javafx.geometry.Insets;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
+
+import java.util.List;
 
 
 /**
  * Created by Dan on 12/10/2016.
  * Class describing dialog to display Good type details
  */
-public class GoodDetailDialog extends Dialog {
+public class GoodDetailDialog extends Dialog<Good> {
 
     private static final String DETAILS_TITLE = "Zobrazit detail zboží";
     private static final String DETAILS_HEADER_TEXT = "Zboží";
@@ -35,6 +34,7 @@ public class GoodDetailDialog extends Dialog {
     private Label volumePlaceholder;
     private Label pricePlaceholder;
     private ImageView photoPlaceholder;
+    private Button findSimilar;
 
 
     public GoodDetailDialog(int id)
@@ -45,8 +45,27 @@ public class GoodDetailDialog extends Dialog {
 
         CreateDialogLayout();
 
+        SetDialogClosingActions();
     }
 
+
+    private void SetDialogClosingActions()
+    {
+        setResultConverter(
+                dialogButton -> {
+                    if (dialogButton == btnDeleteType) {
+                        boolean success = DatabaseD.RemoveGood(GoodItem.getId());
+                        if (!success)
+                            return null;
+                        else return new Good();
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+        );
+    }
 
     private void InitDialog()
     {
@@ -58,7 +77,7 @@ public class GoodDetailDialog extends Dialog {
 
     private void CreateDialogLayout()
     {
-        getDialogPane().getButtonTypes().addAll(btnDeleteType, btnCancelType);
+        getDialogPane().getButtonTypes().addAll(btnCancelType, btnDeleteType);
 
         DefineControls();
 
@@ -66,6 +85,45 @@ public class GoodDetailDialog extends Dialog {
 
         getDialogPane().setContent(grid);
     }
+
+
+    private void AssignActionToFindSimilarButton()
+    {
+        findSimilar.setOnAction(
+                event -> {
+                    System.out.println("Find similar photos event fired...");
+
+                    // Open dialog with displayed similarities in TableView
+                    List<Good> similarGoods = DatabaseD.GetSimilarGoods(GoodItem.getId());  // call made here only for debug purposes
+                    System.out.println("Found: " + similarGoods.size());
+
+                }
+        );
+    }
+
+    /**
+     * Describes action that is done delete good action button is pressed
+
+    private void AssignActionToDeleteGoodButton()
+    {
+        btnDeleteType.setOnAction(
+                event -> {
+                    System.out.println("Select photo event fired...");
+
+                    // Extract stage from control that fired event
+                    Stage stage = Stage.class.cast(Control.class.cast(event.getSource()).getScene().getWindow());
+
+                    // Open file chooser
+                    FileChooser fc = new FileChooser();
+                    fc.setTitle(FILE_CHOOSER_HEADER_TEXT);
+
+                    // Set picked path to TextView control
+                    File pickedFile = fc.showOpenDialog(stage);
+                    pickedPhoto.setText(pickedFile.getAbsolutePath());
+                }
+        );
+    }*/
+
 
     private void DefineControls()
     {
@@ -92,6 +150,11 @@ public class GoodDetailDialog extends Dialog {
 
             System.out.println("D: Image had to be resized, because it is " + width + "x" + height + ".");
         }
+
+        // Prepare find similarities button action
+        findSimilar = new Button();
+        findSimilar.setText("Najdi podobné obrázky");
+        AssignActionToFindSimilarButton();
     }
 
 
@@ -118,6 +181,7 @@ public class GoodDetailDialog extends Dialog {
         grid.add(new Label("2,1"), 2,1, 2, 1);
         grid.add(new Label("2,2"), 2,2, 2, 1);
         grid.add(photoPlaceholder, 2,3, 2, 1);
+        grid.add(findSimilar, 3, 1);
     }
 
 

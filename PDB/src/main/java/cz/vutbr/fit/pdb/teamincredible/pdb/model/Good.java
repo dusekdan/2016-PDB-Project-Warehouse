@@ -50,6 +50,12 @@ public class Good
     public Image getRealImageData() { return realImageData; }
     public void setRealImageData(Image imageFromStream) { realImageData = imageFromStream; }
 
+
+    // Property containing similarity (only to be used with from the upper level with relevant ID to which it relates)
+    private double similarity;
+    public double getSimilarity() { return similarity; }
+    public void setSimilarity(double similarity) { this.similarity = similarity;}
+
     /**
      * Constructs Good object instance on given parameters
      *

@@ -62,7 +62,20 @@ public class ActionsController implements Initializable{
     private void ShowGoodDetail(int id)
     {
         GoodDetailDialog dialog = new GoodDetailDialog(id);
-        dialog.show();
+        Optional<Good> dialogReturned = dialog.showAndWait();
+
+        if (dialogReturned.isPresent())
+        {
+            if (dialogReturned.get() != null)
+            {
+                System.out.println("D: Item seems to be successfully removed...");
+                ReloadTableView();
+            }
+            else
+            {
+                System.out.println("D: Dialog returned null. If you tried to delete good, something went wrong, otherwise, all clear.");
+            }
+        }
     }
 
 

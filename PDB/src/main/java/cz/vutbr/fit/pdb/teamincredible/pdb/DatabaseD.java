@@ -1,5 +1,6 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.controller.GoodsController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 
@@ -88,9 +89,12 @@ public class DatabaseD {
         while (true) {
             try {
                 connection = dataSource.getConnection();
+                Thread.sleep(100);
                 break;
             } catch (SQLException e) {
                 System.out.println("Exception during retrieving connection to Oracle Data Source. Message: " + e.getMessage() + ". Proceeding to make another attempt on seizing the connection.");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         
@@ -395,6 +399,58 @@ public class DatabaseD {
         return entities;
     }
 
+
+    /**
+     * Retrieve images from the database that are similar to the currently selected one
+     * @param referenceId Int numeric identification of the record to which we select similar items
+     * @return List of Good objects with similarity property filled
+     */
+    public static List<Good> GetSimilarGoods(int referenceId)
+    {
+        List<Good> entities = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection())
+        {
+            try(
+                    OraclePreparedStatement statement = (OraclePreparedStatement) conn.prepareStatement(
+                            "SELECT sourceImage.GOODS_ID AS source, targetImages.GOODS_ID AS target, " +
+                                    "SI_ScoreByFtrList( new SI_FeatureList( sourceImage.GOODS_PHOTO_AC, 0.3, sourceImage.GOODS_PHOTO_CH, 0.3, " +
+                                    "sourceImage.GOODS_PHOTO_PC, 0.1, sourceImage.GOODS_PHOTO_TX, 0.3 ), targetImages.GOODS_PHOTO_SI) as similarity, targetImages.GOODS_ID, targetImages.GOODS_VOLUME, targetImages.GOODS_NAME, " +
+                                    " targetImages.GOODS_PHOTO, targetImages.GOODS_PRICE FROM GOODS sourceImage, GOODS targetImages " +
+                                    " WHERE sourceImage.GOODS_ID <> targetImages.GOODS_ID AND sourceImage.GOODS_ID = ? " +
+                                    " ORDER BY similarity ASC ")
+            )
+            {
+                statement.setInt(1, referenceId);
+                OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();
+
+                // Retrieving entities from database
+                while (resultSet.next()) {
+                    System.out.println("Retrieving similar entity from GOODS table...");
+
+                    // Retrieve raw data and cast it to OrdImage
+                    OrdImage entityPhoto = (OrdImage) resultSet.getORAData(7, OrdImage.getORADataFactory());
+
+                    Good entity = new Good();
+                    entity.setId(resultSet.getInt(4));          // NOTE: Indexing in oracle database starts with 1 (historically, mathematically, etc.)
+                    entity.setVolume(resultSet.getDouble(5));
+                    entity.setName(resultSet.getString(6));
+                    entity.setPhoto(entityPhoto);
+                    entity.setPrice(resultSet.getDouble(8));
+                    entity.setSimilarity(resultSet.getDouble("similarity"));
+
+                    entities.add(entity);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("E: Exception in selecting similar GOODS entities. Message: " + e.getMessage());
+        }
+
+        return entities;
+    }
+
     /**
      * Returns good record identified by id
      *
@@ -432,6 +488,31 @@ public class DatabaseD {
         }
     }
 
+
+    /**
+     * Remove record from GOODS table
+     * @param goodId Int identification of GOODS table record to be removed
+     * @return boolean true on success of operation, false otherwise
+     */
+    public static boolean RemoveGood(int goodId)
+    {
+        try (Connection connection = getConnection())
+        {
+            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("DELETE FROM GOODS WHERE GOODS_ID = ?"))
+            {
+                statement.setInt(1, goodId);
+
+                return statement.executeUpdate() != 0;
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("E: Unable to remove GOOD record from databse");
+            return false;
+        }
+    }
+
+
     /**
      * From BLOB retrieved as Image data from database creates BufferedImage which then translates to Image (javafx package)
      * @return Image converted image
@@ -457,6 +538,7 @@ public class DatabaseD {
     /*
      * Database initialization part
      */
+
     /**
      *
      *
