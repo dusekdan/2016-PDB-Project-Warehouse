@@ -55,15 +55,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         }
 
         shapeList.sort(Comparator.comparing(CustomShape::getId));
-        hasChanges = false;
-
-        this.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                super.focusGained(e);
-                repaint();
-            }
-        });
+        hasChanges = true;
 
         this.addKeyListener(new KeyAdapter() {
             @Override
@@ -393,7 +385,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             System.out.println("Translating to: "+shapeObject.getTranslation().toString());
             g2D.translate(translationPoint.x, translationPoint.y);
 
-            filling = Color.gray;
+            filling = Color.ORANGE;
             if (shapeObject.isSelected())
             {
                 filling = Color.RED;

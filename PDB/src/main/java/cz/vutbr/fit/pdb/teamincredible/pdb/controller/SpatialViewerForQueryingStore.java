@@ -15,7 +15,7 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.sha
  */
 public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
 
-    public Color filling = Color.DARK_GRAY;
+    public Color filling = Color.GRAY;
     private static final List<CustomShape> privateShapeList = shapeList;
 
     public void SpatialViewerForStore()

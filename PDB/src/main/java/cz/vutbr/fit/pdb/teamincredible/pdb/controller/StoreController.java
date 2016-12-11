@@ -490,6 +490,7 @@ public class StoreController implements Initializable {
         createSwingContentForQueries(swingNode);
 
         StoreACP.getChildren().add(swingNode);
+
     }
 
     private void createSwingContentForQueries(SwingNode swingNode) {
