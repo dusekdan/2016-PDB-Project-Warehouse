@@ -81,7 +81,7 @@ public class GoodInRack {
      */
     @Override
     public String toString() {
-        return name + ", počet: " + count;
+        return  "rack: " + rackID + ", zboží:" + name + ", počet: " + count;
     }
 
 }

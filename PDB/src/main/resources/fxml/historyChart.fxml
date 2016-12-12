@@ -1,23 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.net.URL?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 
 <AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.vutbr.fit.pdb.teamincredible.pdb.controller.HistoryChartController">
     <stylesheets>
         <URL value="@/styles/historychart.css" />
     </stylesheets>
    <children>
-      <LineChart fx:id="historyChart" layoutX="50.0" title="Graf obsazení skladu" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <LineChart fx:id="historyChart" layoutX="50.0" layoutY="49.0" prefHeight="341.0" prefWidth="580.0" title="Graf obsazení skladu" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="49.0">
         <xAxis>
-          <CategoryAxis side="BOTTOM" fx:id="historyChartX"  />
+          <CategoryAxis fx:id="historyChartX" side="BOTTOM" />
         </xAxis>
         <yAxis>
-          <NumberAxis side="LEFT" fx:id="historyChartY" />
+          <NumberAxis fx:id="historyChartY" side="LEFT" />
         </yAxis>
       </LineChart>
+      <HBox layoutX="10.0" layoutY="10.0" prefHeight="34.0" prefWidth="580.0" spacing="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <Label text="Čas" />
+            <Slider blockIncrement="1.0" max="4320.0" minorTickCount="1" />
+            <Slider blockIncrement="1.0" max="43200.0" minorTickCount="1" value="43200.0" />
+            <Label text="Čas" />
+         </children>
+         <padding>
+            <Insets top="5.0" />
+         </padding>
+      </HBox>
    </children>
 </AnchorPane>

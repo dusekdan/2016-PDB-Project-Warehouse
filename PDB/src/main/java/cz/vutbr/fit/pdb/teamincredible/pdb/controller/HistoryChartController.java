@@ -5,14 +5,18 @@
  */
 package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.Database;
+import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.ChartDataModel;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -30,61 +34,80 @@ import javafx.util.Pair;
  */
 public class HistoryChartController implements Initializable {
 
-    @FXML private LineChart historyChart;
-    @FXML private CategoryAxis axisX;
-    @FXML private NumberAxis axisY;
-    
-    
+    @FXML
+    private LineChart historyChart;
+    @FXML
+    private CategoryAxis axisX;
+    @FXML
+    private NumberAxis axisY;
+
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Calendar begin = (Calendar) StoreActivityRecord.currentDay.clone();
-        Calendar end =  (Calendar) StoreActivityRecord.currentDay.clone();
+        Calendar end = (Calendar) StoreActivityRecord.currentDay.clone();
         end.add(Calendar.DATE, 1);
-        
+
         SimpleDateFormat format = new SimpleDateFormat("dd. MMMM");
         SimpleDateFormat formatTime = new SimpleDateFormat("dd. MMMM, HH:mm:ss,SSS");
         historyChart.setTitle(
-                "Obsazení skladu dne " 
-                        + format.format(begin.getTime())
+                "Obsazení skladu dne "
+                + format.format(begin.getTime())
         );
+
+        HashMap<String, XYChart.Series> series = new HashMap<>();
+        series.put("0", new XYChart.Series());
+        series.put("00", new XYChart.Series());
         
-        HashMap<String, XYChart.Series> series = new HashMap<String, XYChart.Series>();
-        ObservableList<ChartDataModel> loadData = ChartDataModel.loadData(new Timestamp(begin.getTime().getTime()), new Timestamp(end.getTime().getTime()));
+        XYChart.Series total;
+        total = series.get("0");
+        total.setName("Celková kapacita");
+        int kap = DatabaseD.getCapacity();
         
-        System.err.println(loadData.size());
-        int counter = 0;
-        for (ChartDataModel chartDataModel : loadData) {
-            System.err.println(counter);
-            System.err.println("velikost: "+chartDataModel.goods.size());
-            for (GoodInRack good : chartDataModel.goods) {
-                if(series.containsKey(good.getGoodID()+""+good.getRackID())) {
-                    XYChart.Series get = series.get(good.getGoodID()+""+good.getRackID());
-                    get.getData().add(new XYChart.Data(formatTime.format( chartDataModel.time), good.getCount()));
+        XYChart.Series rackSum;
+        rackSum = series.get("00");
+        rackSum.setName("Celková obsazená kapacita");
+        
+        
+        while (begin.getTimeInMillis() <= end.getTimeInMillis()) {
+            ChartDataModel loadData = ChartDataModel.loadData(new Timestamp(begin.getTime().getTime()));
+
+            HashMap<Integer, Integer> sum = new HashMap<>();
+            int sumTotal = 0;
+            for (GoodInRack good : loadData.goods) {
+                if (sum.containsKey(good.getRackID())) {
+                    int get = sum.get(good.getRackID());
+                    sum.put(good.getRackID(), get + good.getCount());
+                  
                 } else {
-                    series.put(good.getGoodID()+""+good.getRackID(), new XYChart.Series());
-                    XYChart.Series get = series.get(good.getGoodID()+""+good.getRackID());
-                    get.setName(good.getGoodID()+"good/rack"+good.getRackID());
-                    get.getData().add(new XYChart.Data(formatTime.format( chartDataModel.time), good.getCount()));
+                    sum.put(good.getRackID(), good.getCount());
                 }
-                System.err.println("series: "+good.getGoodID()+""+good.getRackID()+ " time: "+chartDataModel.time+" count: "+good.getCount() );
+                  sumTotal += good.getCount();
             }
-            counter++;
+
+            for (Integer integer : sum.keySet()) {
+                if (!series.containsKey(integer.toString()))
+                {
+                    series.put(integer.toString(), new XYChart.Series());
+                }
+                series.get(integer.toString()).setName("rack " + integer);
+
+                XYChart.Series get = series.get(integer.toString());
+                get.getData().add(
+                        new XYChart.Data(formatTime.format(begin.getTimeInMillis()), sum.get(integer))
+                );
+                total.getData().add(new XYChart.Data(formatTime.format(begin.getTimeInMillis()), kap));
+                rackSum.getData().add(new XYChart.Data(formatTime.format(begin.getTimeInMillis()), sumTotal));
+            }
+      //      System.err.println(loadData.time + "::" + sum);
+            
+            begin.add(Calendar.MINUTE, 15);
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
         historyChart.getData().addAll(series.values());
-        
-    }    
-    
-    
+
+    }
+
 }

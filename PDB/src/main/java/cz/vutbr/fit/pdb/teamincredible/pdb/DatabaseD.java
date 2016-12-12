@@ -227,10 +227,11 @@ public class DatabaseD {
             selectStatement.setInt(1, affectedRowId);
 
             // Prepare file content to be saved to database
-            if(isDummy)
+            if (isDummy) {
                 imgProxy = LoadDummyImageFromWeb(good.getImgFilePath(), selectStatement);
-            else
+            } else {
                 imgProxy = LoadImageFromFile(good.getImgFilePath(), selectStatement);
+            }
 
             if (!SaveImageToDatabase(conn, imgProxy, affectedRowId)) {
                 return false;
@@ -331,7 +332,6 @@ public class DatabaseD {
 
         return imgProxy;
     }
-
 
     private static OrdImage LoadDummyImageFromWeb(String path, OraclePreparedStatement recordStatement) throws SQLException, IOException {
         OrdImage imgProxy = null;
@@ -612,8 +612,9 @@ public class DatabaseD {
         loadInitData();
 
         // Add some basic goods definitions
-        if (InsertDummyGoodTypesData())
+        if (InsertDummyGoodTypesData()) {
             System.out.println("D: Goods dummy data inserted successfully.");
+        }
 
     }
 
@@ -741,7 +742,7 @@ public class DatabaseD {
     private static void loadInitData() {
         Statement stmt = null;
 
-        try (Connection connection = DatabaseD.getConnection()){
+        try (Connection connection = DatabaseD.getConnection()) {
             stmt = connection.createStatement();
 
             stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)"
@@ -759,7 +760,6 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,10,   20,10,   20,20,   10,20,  10,30,   0,30,  0,0)\n"
                     + "	))");
 
-
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'II', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -767,13 +767,12 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,30,   0,30,   0,0)\n"
                     + "	))");
 
-                stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
+            stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'III', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,40,   0,40,   0,0)\n"
                     + "	))");
-
 
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('I', 1000, 10, 30, \n"
@@ -803,23 +802,17 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
 
-
-
-
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (1, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(30,30,  50,30,  50,40,   40,40,   40,60,   30,60,  30,30)\n"
                     + "	), 3)");
 
-
-
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (2, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(100,20,  110,20,  110,30,   120,30,   120,40,   110,40,  110,50,   100,50,  100,20)\n"
                     + "	), 0)");
-
 
             stmt.execute("   insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (3, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -834,8 +827,7 @@ public class DatabaseD {
     }
 
     @SuppressWarnings("Duplicates")
-    private static boolean DummyGoodInsert(Good good)
-    {
+    private static boolean DummyGoodInsert(Good good) {
         // One connection for the whole insertion logic
         Connection conn = getConnection();
 
@@ -864,7 +856,7 @@ public class DatabaseD {
         try {
             conn.commit();
             conn.setAutoCommit(true);
-            
+
             conn.close();
         } catch (Exception e) {
             System.out.println("Failed to insert Good record to the database. Message: " + e.getMessage());
@@ -879,8 +871,7 @@ public class DatabaseD {
      *
      * @return Boolean true on success, false otherwise
      */
-    public static boolean InsertDummyGoodTypesData()
-    {
+    public static boolean InsertDummyGoodTypesData() {
         String pathToFile1 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/civka1.jpg";
         Good good1 = new Good("Cívka", 250.00, pathToFile1, 1000);
 
@@ -905,7 +896,6 @@ public class DatabaseD {
         String pathToFile8 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/tablet2.jpg";
         Good good8 = new Good("Podobný tablet Samsung", 800.00, pathToFile8, 4000);
 
-
         return DummyGoodInsert(good1) && DummyGoodInsert(good2) && DummyGoodInsert(good3) && DummyGoodInsert(good4)
                 && DummyGoodInsert(good5) && DummyGoodInsert(good6) && DummyGoodInsert(good7) && DummyGoodInsert(good8);
 
@@ -925,7 +915,7 @@ public class DatabaseD {
     public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
 
-        try(Connection connection = DatabaseD.getConnection()) {
+        try (Connection connection = DatabaseD.getConnection()) {
             stmt = connection.createStatement();
 
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
@@ -1016,7 +1006,7 @@ public class DatabaseD {
     public static boolean RemoveGoodFromStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
 
-        try(Connection connection = DatabaseD.getConnection()) {
+        try (Connection connection = DatabaseD.getConnection()) {
 
             stmt = connection.createStatement();
 
@@ -1163,41 +1153,58 @@ public class DatabaseD {
         return ret;
     }
 
-    public static ObservableList<ChartDataModel> getGraphData(Timestamp from, Timestamp to) {
-        long step = (to.getTime() - from.getTime()) / 20;
-        long time = from.getTime();
-        ObservableList<ChartDataModel> res = FXCollections.observableArrayList();
-        List<GoodInRack> goods = new ArrayList<>();
+    /**
+     * get goods in racks in specified time
+     *
+     * @param time
+     * @return object representing all data
+     */
+    public static ChartDataModel getGraphData(Timestamp time) {
+        ChartDataModel res = null;
         PreparedStatement stmt = null;
-        try(Connection connection = DatabaseD.getConnection()) {
+        List<GoodInRack> goods = new ArrayList<>();
+        try (Connection connection = DatabaseD.getConnection()) {
 
-            while ( time <= to.getTime()) {
-                stmt = connection.prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
-                        + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
-                        + "WHERE rack_goods.valid_from < (?) AND rack_goods.valid_to > (?)");
-                stmt.setTimestamp(1, new Timestamp(time));
-                stmt.setTimestamp(2, new Timestamp(time));
-                ResultSet executeQuery = stmt.executeQuery();
-                goods.clear();
-                while (executeQuery.next()) {
-                    goods.add(new GoodInRack(
-                            executeQuery.getInt(3),
-                            executeQuery.getInt(2),
-                            executeQuery.getInt(1),
-                            executeQuery.getString(4))
-                    );
-                }
-                res.add(new ChartDataModel(new Timestamp(time), goods));
-                time = time + step;
-                stmt.close();
+            stmt = connection.prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
+                    + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
+                    + "WHERE rack_goods.valid_from <= (?) AND rack_goods.valid_to >= (?)");
+
+            stmt.setTimestamp(1, time);
+            stmt.setTimestamp(2, time);
+
+            ResultSet executeQuery = stmt.executeQuery();
+            while (executeQuery.next()) {
+                goods.add(new GoodInRack(
+                        executeQuery.getInt(3),
+                        executeQuery.getInt(2),
+                        executeQuery.getInt(1),
+                        executeQuery.getString(4))
+                );
             }
+            res = new ChartDataModel(new Timestamp(time.getTime()), goods);
+
+            stmt.close();
 
         } catch (SQLException e) {
-                System.err.println("E: something went wrong during asking for graph data: "+e.getMessage() );
+            System.err.println("E: something went wrong during asking for graph data: " + e.getMessage());
         }
         return res;
     }
 
+    public static int getCapacity() {
+        int ret = 0;
+        try (Connection connection = DatabaseD.getConnection()) {
+            Statement stmt = connection.createStatement();
+            ResultSet executeQuery = stmt.executeQuery("SELECT SUM(rack_definitions.rack_defs_capacity) FROM rack_definitions INNER JOIN racks\n"
+                    + "ON racks.racks_type = rack_definitions.rack_defs_id");
+            if(executeQuery.next()) {
+                ret = executeQuery.getInt(1);
+            }
+        } catch (SQLException ex) {
+                 System.err.println("E: something went wrong during asking for capacity " + ex.getMessage());
+        }
+        return ret;
+    }
 
     public DatabaseD() {
     }
