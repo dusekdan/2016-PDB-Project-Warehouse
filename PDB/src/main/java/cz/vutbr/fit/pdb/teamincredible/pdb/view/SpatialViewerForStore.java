@@ -1,11 +1,13 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
-import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomRackDefinition;
+import cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomShape;
 import cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD;
 import cz.vutbr.fit.pdb.teamincredible.pdb.SpatialConverters;
+import javafx.scene.control.Alert;
 import oracle.spatial.geometry.JGeometry;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
@@ -16,6 +18,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
+import static cz.vutbr.fit.pdb.teamincredible.pdb.DatabaseD.getGoodsInRack;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.MainApp.UNIT;
 import static java.awt.event.MouseEvent.*;
 
@@ -274,8 +277,19 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
     private void deleteShape() {
 
         CustomShape deletedShape = getSelectedShapeObject();
+
         if (deletedShape != null)
         {
+            if (getGoodsInRack(deletedShape.getId()) != null && getGoodsInRack(deletedShape.getId()).size() > 0 )
+            {
+
+                JOptionPane.showMessageDialog(getParent(),
+                        "Stojan nelze odstranit, protože není prázdný, odstraňte z něj zboží a opakujte akci.",
+                        "Chyba",
+                        JOptionPane.ERROR_MESSAGE);
+
+                return;
+            }
             deletedShape.delete();
         }
     }
