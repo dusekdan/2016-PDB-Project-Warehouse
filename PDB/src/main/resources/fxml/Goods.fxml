@@ -26,8 +26,8 @@
             <Button fx:id="todayBTN" mnemonicParsing="false" onAction="#showTodayChanges" text="Dnešní" />
             <Button fx:id="yesterdayBTN" mnemonicParsing="false" onAction="#showYesterdayChanges" text="Včerejší" />
             <DatePicker fx:id="showDateDP" onAction="#selectedDayChanges" promptText="zvolte datum" />
-            <Label prefHeight="30.0" prefWidth="284.0" text="Zobrazeno pro: Dnes" textAlignment="CENTER" />
-            <Button mnemonicParsing="false" text="Zobrazit graf" onAction="#showChart" />
+            <Label prefHeight="30.0" prefWidth="284.0" text="Zobrazeno pro: Dnes" textAlignment="CENTER" visible="false" />
+            <Button mnemonicParsing="false" onAction="#showChart" text="Zobrazit graf" />
          </children>
          <padding>
             <Insets top="5.0" />

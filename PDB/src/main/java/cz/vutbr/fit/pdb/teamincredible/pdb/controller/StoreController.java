@@ -93,9 +93,6 @@ public class StoreController implements Initializable {
     private int rackToId;
     private int goodToId;
 
-
-
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("StoreController init");
@@ -119,8 +116,8 @@ public class StoreController implements Initializable {
                 //QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM,
                 QUERY_STR_COUNT_USED_AREA,
                 QUERY_STR_JOIN_RACKS
-                //QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
-                //QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
+        //QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
+        //QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
         );
     }
 
@@ -321,7 +318,7 @@ public class StoreController implements Initializable {
                         //posun rackGeometry tak, aby splnovalo translation v shapeObject
                         rackGeometry = rackGeometry.affineTransforms(true, shapeObject.getTranslation().getX(), shapeObject.getTranslation().getY(), 0,
                                 false, null, 0, 0, 0,
-                                true, rotationPoint, null, shapeObject.getRotation()*Math.toRadians(45), -1,
+                                true, rotationPoint, null, shapeObject.getRotation() * Math.toRadians(45), -1,
                                 false, 0, 0, 0, 0, 0, 0,
                                 false, null, null, 0,
                                 false, null, null);
@@ -402,8 +399,12 @@ public class StoreController implements Initializable {
             count = res.get().getKey();
         }
 
-        DatabaseD.InsertGoodIntoStorage(goodId, rackId, count);
-        DisplayInformation("Úspěch", "Do stojanu č. " + rackId + " bylo přidáno " + count + " kus/ů zboží " + goodId + ".");
+        if (DatabaseD.InsertGoodIntoStorage(goodId, rackId, count)) {
+            DisplayInformation("Úspěch", "Do stojanu č. " + rackId + " bylo přidáno " + count + " kus/ů zboží " + goodId + ".");
+        }
+        else {
+             DisplayInformation("Pozor", "Zboží nelze přidat, překročena kapacita skladu!");
+        }
 
     }
 
@@ -456,14 +457,13 @@ public class StoreController implements Initializable {
                 DisplayInformation("Info", "Je nutno zvolit umístění vloženého zboží!");
                 return;
             }
-         DatabaseD.MoveGoodFromTo(goodFromId,  rackFromId, goodFromId, rackToId, count);
-         movePrepare = true;
+            DatabaseD.MoveGoodFromTo(goodFromId, rackFromId, goodFromId, rackToId, count);
+            movePrepare = true;
 
-         DisplayInformation("Úspěch", "Zboží přesunuto.");
+            DisplayInformation("Úspěch", "Zboží přesunuto.");
+        }
+
     }
-
-    }
-
 
     public void modificationMode(ActionEvent actionEvent) {
 
@@ -482,11 +482,10 @@ public class StoreController implements Initializable {
 
     private void showQueryMode() {
 
-
         StoreACP.getChildren().remove(0);
 
         final SwingNode swingNode = new CustomSwingNode();
-        swingNode.resize(500,500);
+        swingNode.resize(500, 500);
 
         createSwingContentForQueries(swingNode);
 
@@ -502,7 +501,7 @@ public class StoreController implements Initializable {
                 JPanel panel = null;
                 panel = new SpatialViewerForQueryingStore();
 
-                panel.setPreferredSize(new Dimension(500,500));
+                panel.setPreferredSize(new Dimension(500, 500));
 
                 swingNode.setContent(panel);
                 panel.repaint();
@@ -514,32 +513,24 @@ public class StoreController implements Initializable {
 
         System.out.println("Selected query: " + comboboxQuery.getValue());
 
-        switch (comboboxQuery.getValue().toString())
-        {
+        switch (comboboxQuery.getValue().toString()) {
             case QUERY_STR_SHOW_ITEMS_FROM:
                 break;
             case QUERY_STR_SHORTEST_WAY_TO_ITEM:
 
-                if (SpatialViewerForQueryingStore.getSelectedShapeObject() != null)
-                {
+                if (SpatialViewerForQueryingStore.getSelectedShapeObject() != null) {
                     Optional<Pair<Integer, GoodTypeRecord>> res = new AddGoodsAndCount(rackFromId, false).showAndWait();
-                    if (!res.isPresent())
-                    {
+                    if (!res.isPresent()) {
                         DisplayInformation("Něco se pokazilo.", "Zkuste prosím opakovat akci.");
-                    }
-                    else
-                    {
+                    } else {
                         int goodId = res.get().getValue().goodIdProperty().getValue();
-                        if (executeShortestWayToItem(goodId))
-                        {
+                        if (executeShortestWayToItem(goodId)) {
                             showQueryMode();
                             showMoreInformationForQuery("");
                             SpatialViewerForQueryingStore.status = NONE;
                         }
                     }
-                }
-                else
-                {
+                } else {
                     DisplayInformation("Něco se pokazilo.", "Vyberte prosím bod, od kterého chcete měřit vzdálenost.");
                 }
                 break;
@@ -566,12 +557,9 @@ public class StoreController implements Initializable {
         CustomShape selectedPoint = null;
         selectedPoint = SpatialViewerForQueryingStore.getSelectedShapeObject();
 
-        if (selectedPoint == null)
-        {
+        if (selectedPoint == null) {
             return false;
-        }
-        else
-        {
+        } else {
 
             int nearestRackID = -1;
 
@@ -579,9 +567,7 @@ public class StoreController implements Initializable {
 
                 dbConnection.setAutoCommit(false);
                 try (
-                        PreparedStatement selectStatement = dbConnection.prepareStatement("SELECT r.racks_id, SDO_GEOM.SDO_DISTANCE(r.racks_geometry, SDO_GEOMETRY(2001, null, SDO_POINT_TYPE(?,?,NULL), NULL, NULL) , 0.005) as distance FROM racks r join rack_goods rg on r.racks_id=rg.racks_id where rg.goods_id=? order by distance fetch first 1 rows only");
-                        )
-                {
+                        PreparedStatement selectStatement = dbConnection.prepareStatement("SELECT r.racks_id, SDO_GEOM.SDO_DISTANCE(r.racks_geometry, SDO_GEOMETRY(2001, null, SDO_POINT_TYPE(?,?,NULL), NULL, NULL) , 0.005) as distance FROM racks r join rack_goods rg on r.racks_id=rg.racks_id where rg.goods_id=? order by distance fetch first 1 rows only");) {
 
                     selectStatement.setInt(1, selectedPoint.getCenterPoint().x);
                     selectStatement.setInt(2, selectedPoint.getCenterPoint().y);
@@ -595,18 +581,14 @@ public class StoreController implements Initializable {
                     resultSet.close();
 
                     CustomShape nearestRack = null;
-                    if (nearestRackID != -1)
-                    {
+                    if (nearestRackID != -1) {
                         nearestRack = SpatialViewerForQueryingStore.getShapeById(nearestRackID);
-                        if (nearestRack != null)
-                        {
+                        if (nearestRack != null) {
                             SpatialViewerForQueryingStore.unselectAllShapes();
                             nearestRack.setSelected();
                             return true;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         DisplayInformation("Něco se pokazilo.", "Toto zboží se nenachází v žádném stojanu, zkuste prosím opakovat akci.");
                     }
 
@@ -662,8 +644,7 @@ public class StoreController implements Initializable {
         SpatialViewerForQueryingStore.deleteAllTemporalShapes();
         showMoreInformationForQuery("");
 
-        switch (comboboxQuery.getValue().toString())
-        {
+        switch (comboboxQuery.getValue().toString()) {
             case QUERY_STR_SHOW_ITEMS_FROM:
                 break;
             case QUERY_STR_SHORTEST_WAY_TO_ITEM:
@@ -695,9 +676,7 @@ public class StoreController implements Initializable {
         try (Connection dbConnection = DatabaseD.getConnection()) {
             dbConnection.setAutoCommit(false);
             try (
-                    PreparedStatement selectStatement = dbConnection.prepareStatement("select sum(sdo_geom.sdo_area(racks_geometry,1)) plocha from racks")
-            )
-            {
+                    PreparedStatement selectStatement = dbConnection.prepareStatement("select sum(sdo_geom.sdo_area(racks_geometry,1)) plocha from racks")) {
                 //selectStatement.setInt(1, shapeObject.getRackTypeId());
                 ResultSet resultSet = selectStatement.executeQuery();
 

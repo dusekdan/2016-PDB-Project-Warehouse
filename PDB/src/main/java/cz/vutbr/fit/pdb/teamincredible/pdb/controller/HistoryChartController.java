@@ -47,6 +47,10 @@ public class HistoryChartController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Calendar begin = (Calendar) StoreActivityRecord.currentDay.clone();
+        begin.set(Calendar.HOUR_OF_DAY, 0);
+        begin.set(Calendar.MINUTE, 0);
+        begin.set(Calendar.SECOND,0);
+        begin.set(Calendar.MILLISECOND, 0);
         Calendar end = (Calendar) StoreActivityRecord.currentDay.clone();
         end.add(Calendar.DATE, 1);
 
@@ -103,7 +107,7 @@ public class HistoryChartController implements Initializable {
             }
       //      System.err.println(loadData.time + "::" + sum);
             
-            begin.add(Calendar.MINUTE, 15);
+            begin.add(Calendar.MINUTE, 10);
         }
 
         historyChart.getData().addAll(series.values());

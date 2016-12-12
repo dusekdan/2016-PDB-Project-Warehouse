@@ -23,7 +23,7 @@
           <NumberAxis fx:id="historyChartY" side="LEFT" />
         </yAxis>
       </LineChart>
-      <HBox layoutX="10.0" layoutY="10.0" prefHeight="34.0" prefWidth="580.0" spacing="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <HBox layoutX="10.0" layoutY="10.0" prefHeight="34.0" prefWidth="580.0" spacing="10.0" visible="false" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
             <Label text="Čas" />
             <Slider blockIncrement="1.0" max="4320.0" minorTickCount="1" />

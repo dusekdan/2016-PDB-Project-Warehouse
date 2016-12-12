@@ -615,7 +615,7 @@ public class DatabaseD {
         if (InsertDummyGoodTypesData()) {
             System.out.println("D: Goods dummy data inserted successfully.");
         }
-
+        insertHistory();
     }
 
     /**
@@ -731,9 +731,34 @@ public class DatabaseD {
                         + " COMMIT; \n"
                         + " END;\n")) {
             statement.execute();
+
         } catch (Exception e) {
             System.out.println("E: Unable to restore database procedures.");
         }
+
+        try (Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement("CREATE OR REPLACE TRIGGER trigger_checkCnt\n"
+                        + "AFTER INSERT ON rack_goods\n"
+                        + "DECLARE\n"
+                        + "      occupy NUMBER(38);\n"
+                        + "      total NUMBER(38);\n"
+                        + "BEGIN\n"
+                        + "\n"
+                        + "SELECT SUM(rack_goods.rack_goods_count) INTO occupy FROM rack_goods WHERE rack_goods.valid_to =  TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF');\n"
+                        + "SELECT SUM(rack_definitions.rack_defs_capacity) INTO total FROM rack_definitions INNER JOIN racks ON racks.racks_type = rack_definitions.rack_defs_id;\n"
+                        + "\n"
+                        + "if occupy > total THEN\n"
+                        + "   raise_application_error( -20001, 'Bylo vlozeno vice zbozi, nez je kapacita skladu!!');\n"
+                        + "   rollback;\n"
+                        + "END IF;\n"
+                        + "\n"
+                        + "END;")) {
+            statement.execute();
+
+        } catch (Exception e) {
+            System.out.println("E: Unable to restore count check trigger." + e.getMessage());
+        }
+
     }
 
     /**
@@ -819,6 +844,125 @@ public class DatabaseD {
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
                     + "	), 0)");
+
+            stmt.close();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private static void insertHistory() {
+        Statement stmt = null;
+
+        try (Connection connection = DatabaseD.getConnection()) {
+            stmt = connection.createStatement();
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 1,"
+                    + " 2,"
+                    + " 1000,"
+                    + " TO_TIMESTAMP('2016-12-16-10.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-16-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 1,"
+                    + " 2,"
+                    + " 2000,"
+                    + " TO_TIMESTAMP('2016-12-16-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 1,"
+                    + " 2,"
+                    + " 500,"
+                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
+                    + " 1500,"
+                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
+                    + " 400,"
+                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-16-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
+                    + " 800,"
+                    + " TO_TIMESTAMP('2016-12-16-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+               stmt.execute("insert into rack_goods VALUES ("
+                    + " 1,"
+                    + " 2,"
+                    + " 1000,"
+                    + " TO_TIMESTAMP('2016-12-12-10.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-12-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 1,"
+                    + " 2,"
+                    + " 2000,"
+                    + " TO_TIMESTAMP('2016-12-12-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 1,"
+                    + " 2,"
+                    + " 500,"
+                    + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-16-10.0.0.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
+                    + " 1500,"
+                    + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
+                    + " 400,"
+                    + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-12-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
+                    + " 800,"
+                    + " TO_TIMESTAMP('2016-12-12-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
 
             stmt.close();
         } catch (SQLException e) {
@@ -964,8 +1108,9 @@ public class DatabaseD {
             }
 
         } catch (SQLException ex) {
-            System.err.println("E: Insert to " + stockID + " failed for good " + goodID + " and count " + count);
+            System.err.println("E: Insert to " + stockID + " failed for good " + goodID + " and count " + count + ": " + ex.getMessage());
             //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
         return true;
     }
@@ -1197,11 +1342,11 @@ public class DatabaseD {
             Statement stmt = connection.createStatement();
             ResultSet executeQuery = stmt.executeQuery("SELECT SUM(rack_definitions.rack_defs_capacity) FROM rack_definitions INNER JOIN racks\n"
                     + "ON racks.racks_type = rack_definitions.rack_defs_id");
-            if(executeQuery.next()) {
+            if (executeQuery.next()) {
                 ret = executeQuery.getInt(1);
             }
         } catch (SQLException ex) {
-                 System.err.println("E: something went wrong during asking for capacity " + ex.getMessage());
+            System.err.println("E: something went wrong during asking for capacity " + ex.getMessage());
         }
         return ret;
     }
