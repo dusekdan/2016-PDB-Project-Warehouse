@@ -401,13 +401,13 @@ public class DatabaseD {
     /**
      * Retrieves entities from GOODS table
      *
-     * @return List<Good> List of Good object representing entities stored in
+     * @return List of Good List of Good object representing entities stored in
      * GOODS table. No SI_* types are retrieved.
      */
     public static List<Good> GetGoods() {
         List<Good> entities = new ArrayList<>();
 
-        try (Connection connection = dataSource.getConnection()) {
+        try (Connection connection = getConnection()) {
             try (
                     OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("SELECT * FROM Goods");
                     OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();) {
