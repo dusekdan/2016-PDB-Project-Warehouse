@@ -14,6 +14,8 @@ import oracle.ord.im.OrdImage;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -187,7 +189,7 @@ public class DatabaseD {
             return false;
         }
 
-        if (!InsertGoodMediaPart(conn, affectedRowId, good)) {
+        if (!InsertGoodMediaPart(conn, affectedRowId, good, false)) {
             System.out.println("E: Something went wrong during insertion of media part.");
             return false;
         }
@@ -213,7 +215,7 @@ public class DatabaseD {
      * @param good Good object which media properties should be inserted
      * @return Boolean true on success, false otherwise
      */
-    private static boolean InsertGoodMediaPart(Connection conn, int affectedRowId, Good good) {
+    private static boolean InsertGoodMediaPart(Connection conn, int affectedRowId, Good good, boolean isDummy) {
         OrdImage imgProxy = null;
 
         // Insert the media data
@@ -224,7 +226,10 @@ public class DatabaseD {
             selectStatement.setInt(1, affectedRowId);
 
             // Prepare file content to be saved to database
-            imgProxy = LoadImageFromFile(good.getImgFilePath(), selectStatement);
+            if(isDummy)
+                imgProxy = LoadDummyImageFromWeb(good.getImgFilePath(), selectStatement);
+            else
+                imgProxy = LoadImageFromFile(good.getImgFilePath(), selectStatement);
 
             if (!SaveImageToDatabase(conn, imgProxy, affectedRowId)) {
                 return false;
@@ -322,6 +327,31 @@ public class DatabaseD {
         // Load image from file
         imgProxy.loadDataFromFile(path);
         imgProxy.setProperties();
+
+        return imgProxy;
+    }
+
+
+    private static OrdImage LoadDummyImageFromWeb(String path, OraclePreparedStatement recordStatement) throws SQLException, IOException {
+        OrdImage imgProxy = null;
+
+        // Execute statement and get data to imgProxy
+        try (OracleResultSet resultSet = (OracleResultSet) recordStatement.executeQuery()) {
+            if (resultSet.next()) {
+                imgProxy = (OrdImage) resultSet.getORAData("GOODS_PHOTO", OrdImage.getORADataFactory());
+            }
+        }
+
+        // Get file from internet
+        URL url = new URL(path);
+        URLConnection conn = url.openConnection();
+        InputStream in = conn.getInputStream();
+
+        // Load image from file
+        imgProxy.loadDataFromInputStream(in);
+        imgProxy.setProperties();
+
+        in.close();
 
         return imgProxy;
     }
@@ -796,19 +826,49 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
                     + "	), 0)");
 
-
-
-
-
-            // Add some basic goods definitions
-            if (InsertDummyGoodTypesData()) {
-                System.out.println("D: Goods dummy data inserted successfully.");
-            }
-
             stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+    }
+
+    @SuppressWarnings("Duplicates")
+    private static boolean DummyGoodInsert(Good good)
+    {
+        // One connection for the whole insertion logic
+        Connection conn = getConnection();
+
+        boolean isInsertedBase = false;
+        int affectedRowId; // Serves as identification of the record to be further updated with SI_* functions
+
+        // Insert basic values
+        try {
+            // Configure connection not to autocommit
+            conn.setAutoCommit(false);
+
+            affectedRowId = InsertGoodBase(good);
+            if (affectedRowId != -1) {
+                isInsertedBase = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Unable to save basic part to database. Message: " + e.getMessage());
+            return false;
+        }
+
+        if (!InsertGoodMediaPart(conn, affectedRowId, good, true)) {
+            System.out.println("E: Something went wrong during insertion of media part.");
+            return false;
+        }
+
+        try {
+            conn.commit();
+            conn.setAutoCommit(true);
+        } catch (Exception e) {
+            System.out.println("Failed to insert Good record to the database. Message: " + e.getMessage());
+            return false;
+        }
+
+        return isInsertedBase;
     }
 
     /**
@@ -818,32 +878,34 @@ public class DatabaseD {
      */
     public static boolean InsertDummyGoodTypesData()
     {
-        String pathToFile1 = DatabaseD.class.getClassLoader().getResource("images/civka1.jpg").getPath();
+        String pathToFile1 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/civka1.jpg";
         Good good1 = new Good("Cívka", 250.00, pathToFile1, 1000);
 
-        String pathToFile2 = DatabaseD.class.getClassLoader().getResource("images/conductor.jpg").getPath();
+        String pathToFile2 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/conductor.jpg";
         Good good2 = new Good("Kondenzátor", 150.00, pathToFile2, 400);
 
-        String pathToFile3 = DatabaseD.class.getClassLoader().getResource("images/head-set1.jpg").getPath();
+        String pathToFile3 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/head-set1.jpg";
         Good good3 = new Good("Sluchátka KOSS", 500.00, pathToFile3, 1200);
 
-        String pathToFile4 = DatabaseD.class.getClassLoader().getResource("images/led-tv1.jpg").getPath();
+        String pathToFile4 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/led-tv1.jpg";
         Good good4 = new Good("Led Televize Sencor", 2000.00, pathToFile4, 16000);
 
-        String pathToFile5 = DatabaseD.class.getClassLoader().getResource("images/mp3-player1.jpg").getPath();
+        String pathToFile5 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/mp3-player1.jpg";
         Good good5 = new Good("MP3 přehrávač Iriver", 400.00, pathToFile5, 2000);
 
-        String pathToFile6 = DatabaseD.class.getClassLoader().getResource("images/notebook.jpg").getPath();
+        String pathToFile6 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/notebook.jpg";
         Good good6 = new Good("Jetý notebook", 1200.00, pathToFile6, 8000);
 
-        String pathToFile7 = DatabaseD.class.getClassLoader().getResource("images/tablet.jpg").getPath();
+        String pathToFile7 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject//tablet.jpg";
         Good good7 = new Good("Explozivní tablet Samsung", 800.00, pathToFile7, 4000);
 
-        String pathToFile8 = DatabaseD.class.getClassLoader().getResource("images/tablet2.jpg").getPath();
+        String pathToFile8 = "http://www.stud.fit.vutbr.cz/~xdusek21/PDBProject/tablet2.jpg";
         Good good8 = new Good("Podobný tablet Samsung", 800.00, pathToFile8, 4000);
 
-        return InsertGood(good1) && InsertGood(good2) && InsertGood(good3)
-                && InsertGood(good4) && InsertGood(good5) && InsertGood(good6) && InsertGood(good7) && InsertGood(good8);
+
+        return DummyGoodInsert(good1) && DummyGoodInsert(good2) && DummyGoodInsert(good3) && DummyGoodInsert(good4)
+                && DummyGoodInsert(good5) && DummyGoodInsert(good6) && DummyGoodInsert(good7) && DummyGoodInsert(good8);
+
     }
 
     /**
