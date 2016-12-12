@@ -920,49 +920,49 @@ public class DatabaseD {
             stmt.execute("insert into rack_goods VALUES ("
                     + " 1,"
                     + " 2,"
-                    + " 1000,"
-                    + " TO_TIMESTAMP('2016-12-16-10.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('2016-12-16-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " 100,"
+                    + " TO_TIMESTAMP('2016-12-11-10.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-11-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.execute("insert into rack_goods VALUES ("
                     + " 1,"
                     + " 2,"
-                    + " 2000,"
-                    + " TO_TIMESTAMP('2016-12-16-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " 200,"
+                    + " TO_TIMESTAMP('2016-12-11-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-11-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.execute("insert into rack_goods VALUES ("
                     + " 1,"
                     + " 2,"
                     + " 500,"
-                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " TO_TIMESTAMP('2016-12-11-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-12-10.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.execute("insert into rack_goods VALUES ("
                     + " 3,"
                     + " 1,"
-                    + " 1500,"
-                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " 150,"
+                    + " TO_TIMESTAMP('2016-12-11-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-11-22.00.00.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.execute("insert into rack_goods VALUES ("
                     + " 3,"
                     + " 1,"
                     + " 400,"
-                    + " TO_TIMESTAMP('2016-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('2016-12-16-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " TO_TIMESTAMP('2016-12-11-22.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-11-23.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.execute("insert into rack_goods VALUES ("
                     + " 3,"
                     + " 1,"
                     + " 800,"
-                    + " TO_TIMESTAMP('2016-12-16-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " TO_TIMESTAMP('2016-12-11-23.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-12-00.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
             
             
@@ -971,7 +971,7 @@ public class DatabaseD {
                stmt.execute("insert into rack_goods VALUES ("
                     + " 1,"
                     + " 2,"
-                    + " 1000,"
+                    + " 100,"
                     + " TO_TIMESTAMP('2016-12-12-10.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
                     + " TO_TIMESTAMP('2016-12-12-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
@@ -979,7 +979,7 @@ public class DatabaseD {
             stmt.execute("insert into rack_goods VALUES ("
                     + " 1,"
                     + " 2,"
-                    + " 2000,"
+                    + " 200,"
                     + " TO_TIMESTAMP('2016-12-12-10.20.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
                     + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
@@ -989,22 +989,22 @@ public class DatabaseD {
                     + " 2,"
                     + " 500,"
                     + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('9999-12-16-10.0.0.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
-                    + ")");
-
-            stmt.execute("insert into rack_goods VALUES ("
-                    + " 3,"
-                    + " 1,"
-                    + " 1500,"
-                    + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
                     + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.execute("insert into rack_goods VALUES ("
                     + " 3,"
                     + " 1,"
+                    + " 100,"
+                    + " TO_TIMESTAMP('2016-12-12-00.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('9999-12-12-04.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + ")");
+
+            stmt.execute("insert into rack_goods VALUES ("
+                    + " 3,"
+                    + " 1,"
                     + " 400,"
-                    + " TO_TIMESTAMP('2016-12-12-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
+                    + " TO_TIMESTAMP('2016-12-12-04.00.00.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
                     + " TO_TIMESTAMP('2016-12-12-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
@@ -1013,7 +1013,7 @@ public class DatabaseD {
                     + " 1,"
                     + " 800,"
                     + " TO_TIMESTAMP('2016-12-12-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
-                    + " TO_TIMESTAMP('9999-12-16-18.03.00.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
+                    + " TO_TIMESTAMP('9999-12-31-18.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
 
             stmt.close();

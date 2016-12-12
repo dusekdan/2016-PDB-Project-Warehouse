@@ -87,7 +87,7 @@ public class GoodsController implements Initializable {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initStyle(StageStyle.UTILITY);
-            stage.setTitle("ABC");
+            stage.setTitle("GRAF");
             stage.setScene(new Scene(root1));  
             stage.show();
           } catch (IOException ex) {
