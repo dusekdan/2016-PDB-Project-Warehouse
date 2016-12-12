@@ -588,7 +588,7 @@ public class DatabaseD {
     /**
      * Truncates table specified by name
      *
-     * @param name String name identification of the table tobe truncated
+     * @param name String name identification of the table to be truncated
      */
     private static void TruncateTableByName(String name) {
         try (Connection connection = getConnection()) {
@@ -624,8 +624,8 @@ public class DatabaseD {
     private static void initDBStruct() {
         //  https://github.com/rychly/tsql2lib/blob/master/tsql2sample/src/main/java/cz/vutbr/fit/tsql2sample/App.java
         Statement stmt = null;
-        try {
-            stmt = DatabaseD.getConnection().createStatement();
+        try (Connection connection = DatabaseD.getConnection()) {
+            stmt = connection.createStatement();
             try {
                 stmt.execute("DROP TABLE racks CASCADE CONSTRAINTS");
             } catch (SQLException e) {
@@ -741,8 +741,8 @@ public class DatabaseD {
     private static void loadInitData() {
         Statement stmt = null;
 
-        try {
-            stmt = DatabaseD.getConnection().createStatement();
+        try (Connection connection = DatabaseD.getConnection()){
+            stmt = connection.createStatement();
 
             stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)"
                     + ""
@@ -864,6 +864,8 @@ public class DatabaseD {
         try {
             conn.commit();
             conn.setAutoCommit(true);
+            
+            conn.close();
         } catch (Exception e) {
             System.out.println("Failed to insert Good record to the database. Message: " + e.getMessage());
             return false;
@@ -923,8 +925,8 @@ public class DatabaseD {
     public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
 
-        try {
-            stmt = DatabaseD.getConnection().createStatement();
+        try(Connection connection = DatabaseD.getConnection()) {
+            stmt = connection.createStatement();
 
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
                     + " VALID_TO > CURRENT_TIMESTAMP"
@@ -1014,9 +1016,9 @@ public class DatabaseD {
     public static boolean RemoveGoodFromStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
 
-        try {
+        try(Connection connection = DatabaseD.getConnection()) {
 
-            stmt = DatabaseD.getConnection().createStatement();
+            stmt = connection.createStatement();
 
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
                     + " VALID_TO > CURRENT_TIMESTAMP"
@@ -1060,7 +1062,7 @@ public class DatabaseD {
 
         ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
 
-        try (Connection connection = dataSource.getConnection()) {
+        try (Connection connection = DatabaseD.getConnection()) {
             try (
                     PreparedStatement statement = connection.prepareStatement("SELECT * FROM rack_goods");
                     ResultSet resultSet = statement.executeQuery();) {
@@ -1094,7 +1096,7 @@ public class DatabaseD {
     public static ObservableList<StoreActivityRecord> GetStoreHistory(Calendar date) {
         ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
 
-        try (Connection connection = dataSource.getConnection()) {
+        try (Connection connection = DatabaseD.getConnection()) {
             Timestamp today = new Timestamp(date.getTimeInMillis());
             Calendar clone = (Calendar) date.clone();
             clone.add(Calendar.DATE, 1);
@@ -1139,8 +1141,8 @@ public class DatabaseD {
     public static ObservableList<GoodInRack> getGoodsInRack(int rackID) {
         ObservableList<GoodInRack> ret = FXCollections.observableArrayList();
         Statement stmt;
-        try {
-            stmt = DatabaseD.getConnection().createStatement();
+        try (Connection connection = DatabaseD.getConnection()) {
+            stmt = connection.createStatement();
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name FROM rack_goods INNER JOIN goods \n"
                     + "ON rack_goods.goods_id=goods.goods_id\n"
                     + "WHERE rack_goods.valid_to > CURRENT_TIMESTAMP AND rack_goods.racks_id = " + rackID);
@@ -1167,10 +1169,10 @@ public class DatabaseD {
         ObservableList<ChartDataModel> res = FXCollections.observableArrayList();
         List<GoodInRack> goods = new ArrayList<>();
         PreparedStatement stmt = null;
-        try {
+        try(Connection connection = DatabaseD.getConnection()) {
 
             while ( time <= to.getTime()) {
-                stmt = DatabaseD.getConnection().prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
+                stmt = connection.prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
                         + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
                         + "WHERE rack_goods.valid_from < (?) AND rack_goods.valid_to > (?)");
                 stmt.setTimestamp(1, new Timestamp(time-step));
