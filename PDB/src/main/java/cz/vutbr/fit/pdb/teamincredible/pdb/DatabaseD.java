@@ -582,9 +582,8 @@ public class DatabaseD {
         loadInitData();
 
         // Add some basic goods definitions
-        if (InsertDummyGoodTypesData()) {
+        if (InsertDummyGoodTypesData())
             System.out.println("D: Goods dummy data inserted successfully.");
-        }
 
     }
 
@@ -730,6 +729,7 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,10,   20,10,   20,20,   10,20,  10,30,   0,30,  0,0)\n"
                     + "	))");
 
+
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'II', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -737,12 +737,13 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,30,   0,30,   0,0)\n"
                     + "	))");
 
-            stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
+                stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'III', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,40,   0,40,   0,0)\n"
                     + "	))");
+
 
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('I', 1000, 10, 30, \n"
@@ -772,11 +773,16 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
 
+
+
+
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (1, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(30,30,  50,30,  50,40,   40,40,   40,60,   30,60,  30,30)\n"
                     + "	), 3)");
+
+
 
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (2, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -784,11 +790,16 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(100,20,  110,20,  110,30,   120,30,   120,40,   110,40,  110,50,   100,50,  100,20)\n"
                     + "	), 0)");
 
+
             stmt.execute("   insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (3, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
                     + "	), 0)");
+
+
+
+
 
             // Add some basic goods definitions
             if (InsertDummyGoodTypesData()) {
@@ -806,29 +817,31 @@ public class DatabaseD {
      *
      * @return Boolean true on success, false otherwise
      */
-    public static boolean InsertDummyGoodTypesData() {
-        String pathToFile1 = MainApp.class.getResource("/images/civka1.jpg").getPath();
+    public static boolean InsertDummyGoodTypesData()
+    {
+        String pathToFile1 = DatabaseD.class.getClassLoader().getResource("images/civka1.jpg").getPath();
+        System.err.println(pathToFile1);
         Good good1 = new Good("Cívka", 250.00, pathToFile1, 1000);
 
-        String pathToFile2 = MainApp.class.getResource("/images/conductor.jpg").getPath();
+        String pathToFile2 = DatabaseD.class.getClassLoader().getResource("images/conductor.jpg").getPath();
         Good good2 = new Good("Kondenzátor", 150.00, pathToFile2, 400);
 
-        String pathToFile3 = MainApp.class.getResource("/images/head-set1.jpg").getPath();
+        String pathToFile3 = DatabaseD.class.getClassLoader().getResource("images/head-set1.jpg").getPath();
         Good good3 = new Good("Sluchátka KOSS", 500.00, pathToFile3, 1200);
 
-        String pathToFile4 = MainApp.class.getResource("/images/led-tv1.jpg").getPath();
+        String pathToFile4 = DatabaseD.class.getClassLoader().getResource("images/led-tv1.jpg").getPath();
         Good good4 = new Good("Led Televize Sencor", 2000.00, pathToFile4, 16000);
 
-        String pathToFile5 = MainApp.class.getResource("/images/mp3-player1.jpg").getPath();
+        String pathToFile5 = DatabaseD.class.getClassLoader().getResource("images/mp3-player1.jpg").getPath();
         Good good5 = new Good("MP3 přehrávač Iriver", 400.00, pathToFile5, 2000);
 
-        String pathToFile6 = MainApp.class.getResource("/images/notebook.jpg").getPath();
+        String pathToFile6 = DatabaseD.class.getClassLoader().getResource("images/notebook.jpg").getPath();
         Good good6 = new Good("Jetý notebook", 1200.00, pathToFile6, 8000);
 
-        String pathToFile7 = MainApp.class.getResource("/images/tablet.jpg").getPath();
+        String pathToFile7 = DatabaseD.class.getClassLoader().getResource("images/tablet.jpg").getPath();
         Good good7 = new Good("Explozivní tablet Samsung", 800.00, pathToFile7, 4000);
 
-        String pathToFile8 = MainApp.class.getResource("/images/tablet2.jpg").getPath();
+        String pathToFile8 = DatabaseD.class.getClassLoader().getResource("images/tablet2.jpg").getPath();
         Good good8 = new Good("Podobný tablet Samsung", 800.00, pathToFile8, 4000);
 
         return InsertGood(good1) && InsertGood(good2) && InsertGood(good3)
@@ -896,7 +909,7 @@ public class DatabaseD {
                         + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                         + ")");
             }
-            stmt.close();
+
         } catch (SQLException ex) {
             System.err.println("E: Insert to " + stockID + " failed for good " + goodID + " and count " + count);
             //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
@@ -968,7 +981,7 @@ public class DatabaseD {
             }
 
             DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
-            stmt.close();
+
         } catch (SQLException ex) {
             System.err.println("E: Remove from " + stockID + " failed for good " + goodID + " and count " + count);
             //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
@@ -1064,7 +1077,7 @@ public class DatabaseD {
      */
     public static ObservableList<GoodInRack> getGoodsInRack(int rackID) {
         ObservableList<GoodInRack> ret = FXCollections.observableArrayList();
-        Statement stmt = null;
+        Statement stmt;
         try {
             stmt = DatabaseD.getConnection().createStatement();
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name FROM rack_goods INNER JOIN goods \n"
@@ -1080,7 +1093,6 @@ public class DatabaseD {
                 ));
             }
 
-            stmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1099,7 +1111,7 @@ public class DatabaseD {
             while ( time <= to.getTime()) {
                 stmt = DatabaseD.getConnection().prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
                         + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
-                        + "WHERE rack_goods.valid_from >= (?) AND rack_goods.valid_from < (?)");
+                        + "WHERE rack_goods.valid_from < (?) AND rack_goods.valid_to > (?)");
                 stmt.setTimestamp(1, new Timestamp(time-step));
                 stmt.setTimestamp(2, new Timestamp(time+step));
                 ResultSet executeQuery = stmt.executeQuery();
@@ -1122,6 +1134,7 @@ public class DatabaseD {
         }
         return res;
     }
+
 
     public DatabaseD() {
     }

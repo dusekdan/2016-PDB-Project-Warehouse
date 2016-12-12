@@ -66,6 +66,7 @@ public class HistoryChartController implements Initializable {
                 } else {
                     series.put(good.getGoodID()+""+good.getRackID(), new XYChart.Series());
                     XYChart.Series get = series.get(good.getGoodID()+""+good.getRackID());
+                    get.setName(good.getGoodID()+"good/rack"+good.getRackID());
                     get.getData().add(new XYChart.Data(formatTime.format( chartDataModel.time), good.getCount()));
                 }
                 System.err.println("series: "+good.getGoodID()+""+good.getRackID()+ " time: "+chartDataModel.time+" count: "+good.getCount() );
