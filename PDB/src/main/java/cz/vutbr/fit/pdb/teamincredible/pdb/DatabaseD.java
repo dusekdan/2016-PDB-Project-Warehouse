@@ -1175,8 +1175,8 @@ public class DatabaseD {
                 stmt = connection.prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
                         + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
                         + "WHERE rack_goods.valid_from < (?) AND rack_goods.valid_to > (?)");
-                stmt.setTimestamp(1, new Timestamp(time-step));
-                stmt.setTimestamp(2, new Timestamp(time+step));
+                stmt.setTimestamp(1, new Timestamp(time));
+                stmt.setTimestamp(2, new Timestamp(time));
                 ResultSet executeQuery = stmt.executeQuery();
                 goods.clear();
                 while (executeQuery.next()) {
