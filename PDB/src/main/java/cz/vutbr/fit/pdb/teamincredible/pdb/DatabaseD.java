@@ -109,10 +109,10 @@ public class DatabaseD {
 
     /**
      * Closes connection to Oracle Data Source
-     *
+     * implNote Method is called in JavaFX application stop() method to
      * @deprecated Method uses OracleDataSource.close() method that is also
      * deprecated
-     * @implNote Method is called in JavaFX application stop() method to
+     * 
      * terminate possibly opened connection before exiting
      */
     public static void closeConnection() {
@@ -1104,16 +1104,16 @@ public class DatabaseD {
      * 
      * pseudo-SQL:    
      *          SELECT rack_goods_count INTO oldCount FROM  rack_goods WHERE
-     *               VALID_TO > CURRENT_TIMESTAMP
+     *               VALID_TO &gt; CURRENT_TIMESTAMP
      *                    AND goods_id = goodID  AND racks_ID = stockID
      * 
      *          newCount := oldCount + count 
      * 
      *          SELECT COUNT(rack_goods_count) INTO numRes FROM rack_goods WHERE
-     *                   VALID_TO > CURRENT_TIMESTAMP
+     *                   VALID_TO &gt; CURRENT_TIMESTAMP
      *                   AND goods_id = goodID AND racks_ID = stockID
      * 
-     *          if numRes > 0
+     *          if numRes &gt; 0
      * 
      *          UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP -- update old
      *                       WHERE goods_id =  goodID 
@@ -1233,13 +1233,13 @@ public class DatabaseD {
      *
      * SQL:
      *      SELECT rack_goods_count INTO oldCount FROM rack_goods WHERE
-     *               VALID_TO > CURRENT_TIMESTAMP
+     *               VALID_TO &gt; CURRENT_TIMESTAMP
      *               AND goods_id = goodID  AND racks_ID = stockID
      *
      *      newCount := oldCount - count
      *  
      *      SELECT COUNT(rack_goods_count) FROM rack_goods WHERE
-     *               VALID_TO > CURRENT_TIMESTAMP
+     *               VALID_TO &gt; CURRENT_TIMESTAMP
      *               AND goods_id = goodID  AND racks_ID = stockID
      * 
      *      UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP  -- update old record to new lower value
@@ -1387,7 +1387,7 @@ public class DatabaseD {
      *  
      * SQL: SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name
      *              FROM rack_goods INNER JOIN goods ON rack_goods.goods_id=goods.goods_id
-     *              WHERE rack_goods.valid_to > CURRENT_TIMESTAMP AND rack_goods.racks_id = rackID
+     *              WHERE rack_goods.valid_to &gt; CURRENT_TIMESTAMP AND rack_goods.racks_id = rackID
      * 
      * 
      * Get goods in rack
@@ -1427,7 +1427,7 @@ public class DatabaseD {
      *              
      *  SQL:    SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name
      *               FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id
-     *               WHERE rack_goods.valid_from <= time AND rack_goods.valid_to > time
+     *               WHERE rack_goods.valid_from &lt;= time AND rack_goods.valid_to &gt; time
      * 
      * 
      * 
