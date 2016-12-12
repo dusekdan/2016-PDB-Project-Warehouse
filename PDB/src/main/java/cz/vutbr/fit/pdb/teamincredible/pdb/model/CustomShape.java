@@ -5,7 +5,10 @@ import java.awt.*;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.MainApp.UNIT;
 
 /**
- * Created by popko on 07/12/2016.
+ * Created by Anna
+ *
+ *  Custom class for storing and manipulating
+ *
  */
 public class CustomShape {
 

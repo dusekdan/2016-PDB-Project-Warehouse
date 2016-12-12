@@ -23,7 +23,11 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.MainApp.UNIT;
 import static java.awt.event.MouseEvent.*;
 
 /**
- * Created by popko on 10/12/2016.
+ * Created by Anna
+ *
+ *  File contains swing node for viewing spatial data for store in modified mode.
+ *  Also contains actions for manipulating the spatial data.
+ *
  */
 public class SpatialViewerForStore extends javax.swing.JPanel {
 

@@ -39,7 +39,10 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.view.QueryingAreaDialog.*;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.shapeList;
 
 /**
- * Created by Sucha on 03.12.2016.
+ * Created by Anna
+ *
+ *  File contains main logic for tab with spatial data - the store
+ *
  */
 public class StoreController implements Initializable {
 
