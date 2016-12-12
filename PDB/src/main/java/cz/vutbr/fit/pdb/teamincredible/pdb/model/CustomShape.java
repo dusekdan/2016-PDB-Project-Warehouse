@@ -5,7 +5,10 @@ import java.awt.*;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.MainApp.UNIT;
 
 /**
- * Created by popko on 07/12/2016.
+ * Created by Anna
+ *
+ *  Custom class for storing and manipulating
+ *
  */
 public class CustomShape {
 
@@ -20,6 +23,12 @@ public class CustomShape {
     private Point centerPoint;
     private boolean deleteAfterAction = false;
 
+    /**
+     * Parametrized Custom shape constructor with basic value initializations
+     * @param shape Shape shape of the shape
+     * @param rackTypeId int identification of the rack type
+     * @param id int identification of the shape
+     */
     public CustomShape(Shape shape, int rackTypeId, int id)
     {
         this.shape = shape;
@@ -43,6 +52,10 @@ public class CustomShape {
         return deleteAfterAction;
     }
 
+    /**
+     * Returns center point of the custom shape
+     * @return Point center of the shape
+     */
     public Point getCenterPoint() {
         return centerPoint;
     }
@@ -105,6 +118,11 @@ public class CustomShape {
         this.boundingBox = boundingBox;
     }
 
+    /**
+     * Recalculates bounding box for the shape
+     * @param x double x coord
+     * @param y double y coord
+     */
     public void recalculateBoundingBox(double x, double y)
     {
         this.boundingBox.translate(((int) x), ((int) y));
@@ -120,6 +138,11 @@ public class CustomShape {
         this.selected = false;
     }
 
+
+    /**
+     * Move shape down
+     * @return true on success, false otherwise
+     */
     public boolean moveDown()
     {
         //can we move down?
@@ -137,6 +160,10 @@ public class CustomShape {
         return true;
     }
 
+    /**
+     * Moves shape up
+     * @return true on success, false otherwise
+     */
     public boolean moveUp()
     {
         //can we move down?
@@ -154,6 +181,11 @@ public class CustomShape {
         return true;
     }
 
+
+    /**
+     * Moves shape left
+     * @return true on success, false otherwise
+     */
     public boolean moveLeft()
     {
         //can we move down?
@@ -171,6 +203,10 @@ public class CustomShape {
         return true;
     }
 
+    /**
+     * Moves shape right
+     * @return true on success, false otherwise
+     */
     public boolean moveRight()
     {
         //can we move down?
@@ -189,11 +225,20 @@ public class CustomShape {
         return true;
     }
 
+
+    /**
+     * Deletes shape
+     */
     public void delete()
     {
         this.deleted = true;
     }
 
+
+    /**
+     * Checks whether the shape is deleted
+     * @return true for deleted shape
+     */
     public boolean isDeleted() {
         return deleted;
     }

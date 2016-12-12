@@ -24,13 +24,18 @@ import java.util.List;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.leftButton;
 
 /**
- * Created by popko on 10/12/2016.
+ * Created by Anna
+ * File contains viewer for dialog for selecting rack to insert into the store
  */
 public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
 
     public Color filling;
     public static List<CustomRackDefinition> racksList;
 
+    /**
+     * Costructor loads rack definitions from database and initializes listeners for selecting inserted rack type.
+     * @throws SQLException
+     */
     public SpatialViewerForAvailableRacks() throws SQLException {
 
         racksList = new ArrayList<>();
@@ -69,6 +74,10 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Checks position of mouseclick and selectes rack which is situated in the clicked position
+     * @param point
+     */
     private void selectOrUnselectShape(Point point) {
 
         System.out.println();
@@ -89,6 +98,10 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
         repaint();
     }
 
+    /**
+     * LoLoads rack definitions from the database
+     * @throws SQLException
+     */
     private void getAvailableRacks() throws SQLException  {
         // create a OracleDataSource instance
 
@@ -183,6 +196,9 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
     }
 
 
+    /**
+     * Remove selection from the selected rack type
+     */
     public void unselectAllRacks()
     {
         for (CustomRackDefinition shapeObject : racksList)
@@ -191,6 +207,10 @@ public class SpatialViewerForAvailableRacks extends javax.swing.JPanel {
         }
     }
 
+    /**
+     *
+     * @return selected rack definition
+     */
     public static CustomRackDefinition getSelectedRackDefinition()
     {
         for (CustomRackDefinition shapeObject : racksList)

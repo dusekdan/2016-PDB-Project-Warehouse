@@ -8,6 +8,11 @@ import javafx.fxml.Initializable;
 public class FXMLController implements Initializable {
 
 
+    /**
+     * Initialization method for FXML controller
+     * @param url URL unused
+     * @param rb ResourceBundle unused
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
@@ -15,6 +20,9 @@ public class FXMLController implements Initializable {
         System.out.println("FXMLController init");
     }
 
+    /**
+     * Empty constructor
+     */
     public FXMLController() {
 
     }
