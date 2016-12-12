@@ -708,7 +708,49 @@ public class DatabaseD {
                     + "  REFERENCES rack_definitions(rack_defs_id)");
             System.out.println("alter3");
 
+            try
+            {
+                stmt.execute("DELETE FROM USER_SDO_GEOM_METADATA WHERE" +
+                        " TABLE_NAME = 'RACKS' AND COLUMN_NAME = 'RACKS_GEOMETRY'");
+            }
+            catch (SQLException e) {
+                System.err.println(e.getMessage());
+            }
+            System.out.println("Metadata deleted.");
+
+            try
+            {
+                stmt.execute("INSERT INTO USER_SDO_GEOM_METADATA VALUES (" +
+                        "'racks', 'racks_geometry'," +
+                        "  SDO_DIM_ARRAY(SDO_DIM_ELEMENT('X', 0, 150, 0.1), SDO_DIM_ELEMENT('Y', 0, 150, 0.1))," +
+                        " NULL" +
+                        ")");
+            }
+            catch (SQLException e) {
+                System.err.println(e.getMessage());
+            }
+            System.out.println("Metadata inserted.");
+
+            try
+            {
+                stmt.execute("DROP INDEX racks_index");
+            }
+            catch (SQLException e) {
+                System.err.println(e.getMessage());
+            }
+            System.out.println("Spatial index deleted.");
+
+            try
+            {
+                stmt.execute("CREATE INDEX racks_index ON racks(racks_geometry) INDEXTYPE IS MDSYS.SPATIAL_INDEX");
+            }
+            catch (SQLException e) {
+                System.err.println(e.getMessage());
+            }
+            System.out.println("Spatial index created.");
+
             stmt.close();
+
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
