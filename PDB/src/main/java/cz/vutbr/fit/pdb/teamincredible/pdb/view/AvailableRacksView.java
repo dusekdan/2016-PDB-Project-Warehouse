@@ -18,7 +18,8 @@ import java.sql.SQLException;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForAvailableRacks.getSelectedRackDefinition;
 
 /**
- * Created by popko on 10/12/2016.
+ * Created by popko on 10/12/2016
+ * Dialog for adding new rack to database
  */
 public class AvailableRacksView extends Dialog<CustomRackDefinition>
 {
@@ -33,6 +34,10 @@ public class AvailableRacksView extends Dialog<CustomRackDefinition>
 
     private ButtonType btnConfirmType;
 
+    /**
+     * Parametrized constructor
+     * @param rackCount int number of racks
+     */
     public AvailableRacksView(int rackCount)
     {
         setTitle("Adding new rack to the store.");
@@ -79,14 +84,17 @@ public class AvailableRacksView extends Dialog<CustomRackDefinition>
 
     }
 
+    /**
+     * Initializes rack view (does nothing in current implementation)
+     */
     private void initializeAvailableRacks() {
-
-
-
-
 
     }
 
+    /**
+     * Creates contents of swing node to display graphic entities
+     * @param swingNode SwingNode referenced swing node
+     */
     private void createSwingContent(SwingNode swingNode) {
         SwingUtilities.invokeLater(() -> {
 

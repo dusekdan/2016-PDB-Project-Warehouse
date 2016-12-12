@@ -20,6 +20,7 @@ import javafx.util.Pair;
 /**
  *
  * @author Anna
+ * Class for selecting and executing dialogs over spatial database
  */
 public class QueryingAreaDialog extends Dialog<String> {
 
@@ -35,6 +36,9 @@ public class QueryingAreaDialog extends Dialog<String> {
     private ComboBox cb;
     private Node confirmButton;
 
+    /**
+     * Constructor that builds dialog
+     */
     public QueryingAreaDialog() {
 
         InitDialog();
