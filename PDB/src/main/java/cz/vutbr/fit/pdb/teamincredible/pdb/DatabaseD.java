@@ -619,6 +619,22 @@ public class DatabaseD {
     }
 
     /**
+     * TSQL: CREATE TABLE rack_goods (
+     *               racks_id NUMBER(10) NOT NULL,
+     *               goods_id NUMBER(10) NOT NULL,
+     *               rack_goods_count NUMBER(32) NOT NULL,
+     *               CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id, valid_from, valid_to)
+     *               ) AS TRANSACTION TIME
+     * 
+     * SQL:  CREATE TABLE rack_goods (
+     *               racks_id NUMBER(10) NOT NULL,
+     *               goods_id NUMBER(10) NOT NULL,
+     *               rack_goods_count NUMBER(32) NOT NULL,
+     *               valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, -- represents temporal part
+     *               valid_to TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,   -- represents temporal part
+     *               CONSTRAINT rack_goods_pk PRIMARY KEY (racks_id, goods_id, valid_from, valid_to)
+     *               )
+     * 
      * Initializes database structure for the application
      */
     @SuppressWarnings("SqlDialectInspection")
@@ -850,7 +866,9 @@ public class DatabaseD {
             System.err.println(e.getMessage());
         }
     }
-
+/**
+ * Insert dummy data 
+ */
     private static void insertHistory() {
         Statement stmt = null;
 
@@ -904,14 +922,6 @@ public class DatabaseD {
                     + " TO_TIMESTAMP('2016-12-16-23.59.59.000000','YYYY-MM-DD-HH24.MI.SS.FF'),"
                     + " TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                     + ")");
-            
-            
-            
-            
-            
-            
-            
-            
             
             
             
@@ -1046,8 +1056,44 @@ public class DatabaseD {
     }
 
     /**
-     * TSQL:
-     *
+     * TSQL:    VALIDTIME PERIOD [now-forever) 
+     *              INSERT INTO rack_goods 
+     *              VALUES (goodID, stockID, count);
+     * 
+     * pseudo-SQL:    
+     *          SELECT rack_goods_count INTO oldCount FROM  rack_goods WHERE
+     *               VALID_TO > CURRENT_TIMESTAMP
+     *                    AND goods_id = goodID  AND racks_ID = stockID
+     * 
+     *          newCount := oldCount + count 
+     * 
+     *          SELECT COUNT(rack_goods_count) INTO numRes FROM rack_goods WHERE
+     *                   VALID_TO > CURRENT_TIMESTAMP
+     *                   AND goods_id = goodID AND racks_ID = stockID
+     * 
+     *          if numRes > 0
+     * 
+     *          UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP -- update old
+     *                       WHERE goods_id =  goodID 
+     *                       AND racks_ID = stockID
+     *                       AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')
+     * 
+     *          INSERT INTO rack_goods VALUES( -- insert new
+     *                   stockID,
+     *                   goodID,
+     *                   newCount,
+     *                   CURRENT_TIMESTAMP,
+     *                   TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF'),
+     *                   )
+     *          else
+     *          INSERT INTO rack_goods VALUES( -- only insert new
+     *                   stockID,
+     *                   goodID,
+     *                    count,
+     *                   CURRENT_TIMESTAMP,
+     *                   TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')
+     *                   )
+     * 
      *
      * Insert objects of goods into stock
      *
@@ -1116,7 +1162,7 @@ public class DatabaseD {
     }
 
     /**
-     * TSQL:
+     * TSQL:  IMPLEMENTED AS REMOVE AND THEN INSERT
      *
      *
      * Move amount of goods from rack to rack
@@ -1137,9 +1183,30 @@ public class DatabaseD {
     }
 
     /**
-     * TSQL:
+     * TSQL:  VALIDTIME PERIOD [now-forever) 
+     *              UPDATE rack_goods 
+     *              SET rack_goods.count=rack_goods.count-count
+     *              WHERE racks_goods.goods_id = goodID 
+     *              AND racks_goods.rack_id = stockID 
      *
+     * SQL:
+     *      SELECT rack_goods_count INTO oldCount FROM rack_goods WHERE
+     *               VALID_TO > CURRENT_TIMESTAMP
+     *               AND goods_id = goodID  AND racks_ID = stockID
      *
+     *      newCount := oldCount - count
+     *  
+     *      SELECT COUNT(rack_goods_count) FROM rack_goods WHERE
+     *               VALID_TO > CURRENT_TIMESTAMP
+     *               AND goods_id = goodID  AND racks_ID = stockID
+     * 
+     *      UPDATE rack_goods SET valid_to = CURRENT_TIMESTAMP  -- update old record to new lower value
+     *                   WHERE goods_id =  goodID 
+     *                    AND racks_ID =  stockID
+     *                   AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF') 
+     * 
+     *      -- now call TSQL insert
+     * 
      * Remove amount for goods from rack
      *
      *
@@ -1190,6 +1257,11 @@ public class DatabaseD {
 
     /**
      * Get all records from racks_goods table
+     * 
+     * TSQL: VALIDTIME
+     *          SELECT * FROM rack_goods;
+     * 
+     * SQL: SELECT * FROM rack_goods; -- time values are included in table         
      *
      * @return
      */
@@ -1335,7 +1407,10 @@ public class DatabaseD {
         }
         return res;
     }
-
+/**
+ * Get store total capacity
+ * @return capacity
+ */
     public static int getCapacity() {
         int ret = 0;
         try (Connection connection = DatabaseD.getConnection()) {
