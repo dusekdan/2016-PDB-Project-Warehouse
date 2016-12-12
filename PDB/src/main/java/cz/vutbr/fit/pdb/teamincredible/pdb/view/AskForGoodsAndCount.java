@@ -1,23 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
@@ -29,23 +21,89 @@ import javafx.util.Pair;
  */
 public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
 
+    // Text constants used across the dialog
+    private static final String ASK_GOOD_DIALOG_TITLE = "Určete počet a typ zboží";
+    private static final String ASK_GOOD_DIALOG_HEADERTEXT = "Zvolte:";
+    private static final String ASK_GOOD_CONFIRM_BUTTON = "Proveď";
+    private static final String ASK_GOOD_COUNT_TEXTFIELD = "Počet zboží";
+    private static final String ASK_GOOD_COUNT_LABEL = "Počet";
+    private static final String ASK_GOOD_CB_LABEL = "Název zboží:";
+
+    // Controls & nodes declarations
+    private ButtonType confirmButtonType;
+    private GridPane grid;
+    private TextField count;
+    private ComboBox cb;
+    private Node confirmButton;
+
+    /**
+     * Constructs object which represents one good type in specified rack
+     *
+     * @param rack specified rack id
+     * @param inserting switch between inserting in rack and removing from rack
+     */
     public AskForGoodsAndCount(int rack, boolean inserting) {
-        setTitle("Počet zboží");
-        setHeaderText("Zadejte počet kusů a druh zboží");
+        InitDialog();
+
+        CreateDialogLayout(rack, inserting);
+
+        SetConverters(inserting);
+
+    }
+
+    /**
+     *
+     * Set window title and texts
+     *
+     */
+    private void InitDialog() {
+        setTitle(ASK_GOOD_DIALOG_TITLE);
+        setHeaderText(ASK_GOOD_DIALOG_HEADERTEXT);
 
         initModality(Modality.APPLICATION_MODAL);
 
-        ButtonType loginButtonType = new ButtonType("Proveď", ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
+    }
 
-        GridPane grid = new GridPane();
+    /**
+     * Create dialog layout grid
+     *
+     * @param rack
+     * @param inserting
+     */
+    private void CreateDialogLayout(int rack, boolean inserting) {
+
+        confirmButtonType = new ButtonType(ASK_GOOD_CONFIRM_BUTTON, ButtonData.OK_DONE);
+        getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
+
+        CreateControlsPreloadData(inserting, rack);
+
+        // set grid
+        grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        TextField username = new TextField();
-        username.setPromptText("počet");
-        ComboBox cb;
+        grid.add(new Label(ASK_GOOD_COUNT_LABEL), 0, 0);
+        grid.add(count, 1, 0);
+        grid.add(new Label(ASK_GOOD_CB_LABEL), 0, 1);
+        grid.add(cb, 1, 1);
+
+        confirmButton = getDialogPane().lookupButton(confirmButtonType);
+
+        getDialogPane().setContent(grid);
+
+    }
+
+    /**
+     * create dialog controls and load data from database
+     *
+     * @param rack id of rack
+     * @param inserting is dialog used for insert new amount
+     */
+    private void CreateControlsPreloadData(boolean inserting, int rack) {
+        count = new TextField();
+        count.setPromptText(ASK_GOOD_COUNT_TEXTFIELD);
+
         if (!inserting) {
             ObservableList<GoodInRack> data;
             data = GoodInRack.loadData(rack);
@@ -63,32 +121,32 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
             cb = new ComboBox(data);
         }
         //     ComboBox cb = new ComboBox(GoodTypeRecord.getData());
-         cb.getSelectionModel().selectFirst();
-        grid.add(new Label("Počet"), 0, 0);
-        grid.add(username, 1, 0);
-        grid.add(new Label("Zboží"), 0, 1);
-        grid.add(cb, 1, 1);
+        cb.getSelectionModel().selectFirst();
 
-        final Node loginButton = getDialogPane().lookupButton(loginButtonType);
-        
+    }
+
+    /**
+     * set converters and listeners
+     *
+     * @param inserting     add listener for check amount of goods in rack
+     */
+    private void SetConverters(boolean inserting) {
 
         if (!inserting) {
-           
-            username.textProperty().addListener((observable, oldValue, newValue) -> {
-               //  System.err.println("disablee: "+(Integer.parseInt(newValue) <= ((GoodInRack) cb.getValue()).getCount())+Integer.parseInt(newValue)+"<="+((GoodInRack) cb.getValue()).getCount());
-                loginButton.setDisable(Integer.parseInt(newValue) > ((GoodInRack) cb.getValue()).getCount());
+
+            count.textProperty().addListener((observable, oldValue, newValue) -> {
+                //  System.err.println("disablee: "+(Integer.parseInt(newValue) <= ((GoodInRack) cb.getValue()).getCount())+Integer.parseInt(newValue)+"<="+((GoodInRack) cb.getValue()).getCount());
+                confirmButton.setDisable(Integer.parseInt(newValue) > ((GoodInRack) cb.getValue()).getCount());
             });
-            loginButton.setDisable(true);
+            confirmButton.setDisable(true);
         }
-        getDialogPane().setContent(grid);
 
         setResultConverter(dialogButton -> {
-            if (dialogButton == loginButtonType) {
-                return new Pair<>(Integer.parseInt(username.getText()), (GoodInRack) cb.getValue());
+            if (dialogButton == confirmButtonType) {
+                return new Pair<>(Integer.parseInt(count.getText()), (GoodInRack) cb.getValue());
             }
             return null;
         });
 
     }
-
 }

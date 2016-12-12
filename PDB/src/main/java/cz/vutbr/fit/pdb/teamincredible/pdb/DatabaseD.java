@@ -2,7 +2,6 @@ package cz.vutbr.fit.pdb.teamincredible.pdb;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
-import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -58,7 +57,6 @@ public class DatabaseD {
         password = value;
     }
 
-    
     /**
      * Initializes connection to database
      */
@@ -75,7 +73,6 @@ public class DatabaseD {
             throw new ExceptionInInitializerError("Initial Database Connection not established. Sorry.");
         }
     }
-
 
     /**
      * Returns new instance of connection
@@ -94,14 +91,18 @@ public class DatabaseD {
                 connection = dataSource.getConnection();
                 break;
             } catch (SQLException e) {
-                try { Thread.sleep(100); dataSource.close(); } catch (Exception e1) { System.out.println("Sleeping error. Message: " + e1.getMessage()); }
+                try {
+                    Thread.sleep(100);
+                    dataSource.close();
+                } catch (Exception e1) {
+                    System.out.println("Sleeping error. Message: " + e1.getMessage());
+                }
                 System.out.println("Exception during retrieving connection to Oracle Data Source. Message: " + e.getMessage() + ". Proceeding to make another attempt on seizing the connection.");
             }
         }
 
         return connection;
     }
-
 
     /**
      * Closes connection to Oracle Data Source
@@ -120,7 +121,6 @@ public class DatabaseD {
         }
     }
 
-
     /**
      * Tests whether connection to database could be established or not
      *
@@ -135,7 +135,6 @@ public class DatabaseD {
         }
     }
 
-
     /**
      * Helper method returning inserted row ID (usefull for multipart queries
      * and consequential updates)
@@ -144,8 +143,7 @@ public class DatabaseD {
      * be returned
      * @return
      */
-    public static int GetInsertedRowID(PreparedStatement statement)
-    {
+    public static int GetInsertedRowID(PreparedStatement statement) {
         int rowId = -1;
 
         try (ResultSet resultSet = statement.getGeneratedKeys()) {
@@ -162,7 +160,6 @@ public class DatabaseD {
     /*
      * Good record insertion, update and modification section
      */
-
     /**
      * Inserts Good object into database, both media and text part of it
      *
@@ -190,8 +187,7 @@ public class DatabaseD {
             return false;
         }
 
-        if(!InsertGoodMediaPart(conn, affectedRowId, good))
-        {
+        if (!InsertGoodMediaPart(conn, affectedRowId, good)) {
             System.out.println("E: Something went wrong during insertion of media part.");
             return false;
         }
@@ -207,9 +203,10 @@ public class DatabaseD {
         return isInsertedBase;
     }
 
-
     /**
-     * Method responsible for insertion and extraction of features for media part of the insert query
+     * Method responsible for insertion and extraction of features for media
+     * part of the insert query
+     *
      * @param conn Connection to oracle data source
      * @param affectedRowId int identification of the row to which insertion of
      * media part corresponds
@@ -242,7 +239,6 @@ public class DatabaseD {
         }
         return true;
     }
-
 
     /**
      * Creates StillImage features for the OrdImage object
@@ -281,7 +277,6 @@ public class DatabaseD {
         return true;
     }
 
-
     /**
      * Saves OrdImage file to database
      *
@@ -303,7 +298,6 @@ public class DatabaseD {
             return false;
         }
     }
-
 
     /**
      * Loads image from file to OrdImage format
@@ -331,7 +325,6 @@ public class DatabaseD {
 
         return imgProxy;
     }
-
 
     /**
      * Inserts textual part of the GOODS table record
@@ -374,7 +367,6 @@ public class DatabaseD {
         return insertedRowId;
     }
 
-
     /**
      * Retrieves entities from GOODS table
      *
@@ -413,28 +405,26 @@ public class DatabaseD {
         return entities;
     }
 
-
     /**
-     * Retrieve images from the database that are similar to the currently selected one
-     * @param referenceId Int numeric identification of the record to which we select similar items
+     * Retrieve images from the database that are similar to the currently
+     * selected one
+     *
+     * @param referenceId Int numeric identification of the record to which we
+     * select similar items
      * @return List of Good objects with similarity property filled
      */
-    public static List<Good> GetSimilarGoods(int referenceId)
-    {
+    public static List<Good> GetSimilarGoods(int referenceId) {
         List<Good> entities = new ArrayList<>();
 
-        try (Connection conn = dataSource.getConnection())
-        {
-            try(
+        try (Connection conn = dataSource.getConnection()) {
+            try (
                     OraclePreparedStatement statement = (OraclePreparedStatement) conn.prepareStatement(
-                            "SELECT sourceImage.GOODS_ID AS source, targetImages.GOODS_ID AS target, " +
-                                    "SI_ScoreByFtrList( new SI_FeatureList( sourceImage.GOODS_PHOTO_AC, 0.3, sourceImage.GOODS_PHOTO_CH, 0.3, " +
-                                    "sourceImage.GOODS_PHOTO_PC, 0.1, sourceImage.GOODS_PHOTO_TX, 0.3 ), targetImages.GOODS_PHOTO_SI) as similarity, targetImages.GOODS_ID, targetImages.GOODS_VOLUME, targetImages.GOODS_NAME, " +
-                                    " targetImages.GOODS_PHOTO, targetImages.GOODS_PRICE FROM GOODS sourceImage, GOODS targetImages " +
-                                    " WHERE sourceImage.GOODS_ID <> targetImages.GOODS_ID AND sourceImage.GOODS_ID = ? " +
-                                    " ORDER BY similarity ASC OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY")
-            )
-            {
+                            "SELECT sourceImage.GOODS_ID AS source, targetImages.GOODS_ID AS target, "
+                            + "SI_ScoreByFtrList( new SI_FeatureList( sourceImage.GOODS_PHOTO_AC, 0.3, sourceImage.GOODS_PHOTO_CH, 0.3, "
+                            + "sourceImage.GOODS_PHOTO_PC, 0.1, sourceImage.GOODS_PHOTO_TX, 0.3 ), targetImages.GOODS_PHOTO_SI) as similarity, targetImages.GOODS_ID, targetImages.GOODS_VOLUME, targetImages.GOODS_NAME, "
+                            + " targetImages.GOODS_PHOTO, targetImages.GOODS_PRICE FROM GOODS sourceImage, GOODS targetImages "
+                            + " WHERE sourceImage.GOODS_ID <> targetImages.GOODS_ID AND sourceImage.GOODS_ID = ? "
+                            + " ORDER BY similarity ASC OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY")) {
                 statement.setInt(1, referenceId);
                 OracleResultSet resultSet = (OracleResultSet) statement.executeQuery();
 
@@ -458,9 +448,7 @@ public class DatabaseD {
                     entities.add(entity);
                 }
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("E: Exception in selecting similar GOODS entities. Message: " + e.getMessage());
         }
 
@@ -489,9 +477,7 @@ public class DatabaseD {
                     item.setPhoto(itemPhoto);
                     item.setPrice(resultSet.getDouble(10));
 
-
                     item.setRealImageData(PrepareImageFromBlob(itemPhoto.getBlobContent()));
-
 
                     return item;
                 } else {
@@ -504,61 +490,52 @@ public class DatabaseD {
         }
     }
 
-
     /**
      * Remove record from GOODS table
+     *
      * @param goodId Int identification of GOODS table record to be removed
      * @return boolean true on success of operation, false otherwise
      */
-    public static boolean RemoveGood(int goodId)
-    {
-        try (Connection connection = getConnection())
-        {
-            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("DELETE FROM GOODS WHERE GOODS_ID = ?"))
-            {
+    public static boolean RemoveGood(int goodId) {
+        try (Connection connection = getConnection()) {
+            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("DELETE FROM GOODS WHERE GOODS_ID = ?")) {
                 statement.setInt(1, goodId);
 
                 return statement.executeUpdate() != 0;
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("E: Unable to remove GOOD record from databse");
             return false;
         }
     }
 
-
     /**
-     * Calls stored procedure that executes image rotation for the record specified by ID
+     * Calls stored procedure that executes image rotation for the record
+     * specified by ID
+     *
      * @param goodId Int identification of the GOODS table record
      * @return Boolean true on success, false otherwise
      */
-    public static boolean RotateImage(int goodId)
-    {
-        try (Connection connection = getConnection())
-        {
-            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("CALL ImageRotation(?)"))
-            {
+    public static boolean RotateImage(int goodId) {
+        try (Connection connection = getConnection()) {
+            try (OraclePreparedStatement statement = (OraclePreparedStatement) connection.prepareStatement("CALL ImageRotation(?)")) {
                 statement.setInt(1, goodId);
 
                 return statement.executeUpdate() == 0;
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("E: Exception in rotating image. Message: " + e.getMessage());
             return false;
         }
     }
 
-
     /**
-     * From BLOB retrieved as Image data from database creates BufferedImage which then translates to Image (javafx package)
+     * From BLOB retrieved as Image data from database creates BufferedImage
+     * which then translates to Image (javafx package)
+     *
      * @return Image converted image
      */
-    private static Image PrepareImageFromBlob(Blob content)
-    {
+    private static Image PrepareImageFromBlob(Blob content) {
         BufferedImage image = null;
         try (InputStream in = content.getBinaryStream()) {
             image = ImageIO.read(in);
@@ -566,8 +543,7 @@ public class DatabaseD {
             System.out.println("E: Unable to retrieve blob content of a image file to display. Message: " + e.getMessage());
         }
 
-        if (image != null)
-        {
+        if (image != null) {
             return SwingFXUtils.toFXImage(image, null);
         }
 
@@ -578,35 +554,28 @@ public class DatabaseD {
     /*
      * Database initialization part
      */
-
     /**
      * Truncates table specified by name
+     *
      * @param name String name identification of the table tobe truncated
      */
-    private static void TruncateTableByName(String name)
-    {
-        try (Connection connection = getConnection())
-        {
-            try (Statement statement = connection.createStatement())
-            {
-                String query = "TRUNCATE TABLE "  + name + " CASCADE" ;
+    private static void TruncateTableByName(String name) {
+        try (Connection connection = getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                String query = "TRUNCATE TABLE " + name + " CASCADE";
                 System.out.println("Trying to execute: " + query);
                 statement.executeUpdate(query);
                 connection.commit();
             }
-        }
-        catch (Exception e)
-        {
-            System.out.println("E: Unable to truncate table " + name +". Message: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("E: Unable to truncate table " + name + ". Message: " + e.getMessage());
         }
     }
-
 
     /**
      * Public method to be called when reinitialization of database is required
      */
-    public static void InitializeDatabase()
-    {
+    public static void InitializeDatabase() {
         initDBStruct();
         initDBProcedures();
         loadInitData();
@@ -617,9 +586,8 @@ public class DatabaseD {
 
     }
 
-
     /**
-     *  Initializes database structure for the application
+     * Initializes database structure for the application
      */
     @SuppressWarnings("SqlDialectInspection")
     private static void initDBStruct() {
@@ -697,12 +665,12 @@ public class DatabaseD {
                     + "  FOREIGN KEY (racks_id)"
                     + "  REFERENCES racks(racks_id)");
             System.out.println("alter1");
-            
+
             stmt.execute("ALTER TABLE rack_goods ADD CONSTRAINT fk_rack_goods_goods"
                     + "  FOREIGN KEY (goods_id)"
                     + "  REFERENCES goods(goods_id)");
             System.out.println("alter2");
-            
+
             stmt.execute("ALTER TABLE racks ADD CONSTRAINT fk_racks_type_rack_defs"
                     + "  FOREIGN KEY (racks_type)"
                     + "  REFERENCES rack_definitions(rack_defs_id)");
@@ -714,32 +682,27 @@ public class DatabaseD {
         }
     }
 
-
     /**
-     *  Initializes stored procedures that application requires in order to work properly
+     * Initializes stored procedures that application requires in order to work
+     * properly
      */
-    private static void initDBProcedures()
-    {
-        try    (Connection connection = getConnection();
-                PreparedStatement statement = connection.prepareStatement("CREATE OR REPLACE \n" +
-                        " PROCEDURE ImageRotation(GoodId NUMBER) \n" +
-                        " AS \n" +
-                        " EditedImage ORDIMAGE; \n" +
-                        " BEGIN \n" +
-                        " SELECT GOODS_PHOTO INTO EditedImage FROM GOODS WHERE GOODS_ID = GoodId FOR UPDATE; \n" +
-                        " EditedImage.process('rotate=90'); \n" +
-                        " UPDATE GOODS SET GOODS_PHOTO=EditedImage WHERE GOODS_ID = GoodId; \n" +
-                        " COMMIT; \n" +
-                        " END;\n"))
-        {
+    private static void initDBProcedures() {
+        try (Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement("CREATE OR REPLACE \n"
+                        + " PROCEDURE ImageRotation(GoodId NUMBER) \n"
+                        + " AS \n"
+                        + " EditedImage ORDIMAGE; \n"
+                        + " BEGIN \n"
+                        + " SELECT GOODS_PHOTO INTO EditedImage FROM GOODS WHERE GOODS_ID = GoodId FOR UPDATE; \n"
+                        + " EditedImage.process('rotate=90'); \n"
+                        + " UPDATE GOODS SET GOODS_PHOTO=EditedImage WHERE GOODS_ID = GoodId; \n"
+                        + " COMMIT; \n"
+                        + " END;\n")) {
             statement.execute();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("E: Unable to restore database procedures.");
         }
     }
-
 
     /**
      * Loads test data into tables
@@ -750,52 +713,36 @@ public class DatabaseD {
         try {
             stmt = DatabaseD.getConnection().createStatement();
 
-            stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)"
+            stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)"
                     + ""
-                    + "values (1, 'L', 1000, 10, 30, \n"
+                    + "values ( 'L', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,10,   10,10,   10,30,   0,30,  0,0)\n"
                     + "	))");
 
-            stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
-                    + "  values (1, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
-                    + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
-                    + "		SDO_ORDINATE_ARRAY(30,30,  50,30,  50,40,   40,40,   40,60,   30,60,  30,30)\n"
-                    + "	), 3)");
-
-            stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
-                    + "values (2, 'T', 1000, 10, 30, \n"
+            stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
+                    + "values ( 'T', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,10,   20,10,   20,20,   10,20,  10,30,   0,30,  0,0)\n"
                     + "	))");
 
-            stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
-                    + "  values (2, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
-                    + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
-                    + "		SDO_ORDINATE_ARRAY(100,20,  110,20,  110,30,   120,30,   120,40,   110,40,  110,50,   100,50,  100,20)\n"
-                    + "	), 0)");
 
-            stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
-                    + "values (3, 'II', 1000, 10, 30, \n"
+            stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
+                    + "values ( 'II', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,30,   0,30,   0,0)\n"
                     + "	))");
 
-            stmt.execute("   insert into racks (racks_type, racks_geometry, racks_rotation)\n"
-                    + "  values (3, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
-                    + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
-                    + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
-                    + "	), 0)");
-
-            stmt.execute("insert into rack_definitions (rack_defs_id, RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
-                    + "values (4, 'III', 1000, 10, 30, \n"
+                stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
+                    + "values ( 'III', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,40,   0,40,   0,0)\n"
                     + "	))");
+
 
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('I', 1000, 10, 30, \n"
@@ -825,15 +772,48 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
 
+
+
+
+            stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
+                    + "  values (1, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
+                    + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
+                    + "		SDO_ORDINATE_ARRAY(30,30,  50,30,  50,40,   40,40,   40,60,   30,60,  30,30)\n"
+                    + "	), 3)");
+
+
+
+            stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
+                    + "  values (2, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
+                    + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
+                    + "		SDO_ORDINATE_ARRAY(100,20,  110,20,  110,30,   120,30,   120,40,   110,40,  110,50,   100,50,  100,20)\n"
+                    + "	), 0)");
+
+
+            stmt.execute("   insert into racks (racks_type, racks_geometry, racks_rotation)\n"
+                    + "  values (3, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
+                    + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
+                    + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
+                    + "	), 0)");
+
+
+
+
+
+            // Add some basic goods definitions
+            if (InsertDummyGoodTypesData()) {
+                System.out.println("D: Goods dummy data inserted successfully.");
+            }
+
             stmt.close();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
 
-
     /**
      * Inserts initial dummy data to goods table
+     *
      * @return Boolean true on success, false otherwise
      */
     public static boolean InsertDummyGoodTypesData()
@@ -866,17 +846,28 @@ public class DatabaseD {
                 && InsertGood(good4) && InsertGood(good5) && InsertGood(good6) && InsertGood(good7) && InsertGood(good8);
     }
 
+    /**
+     * TSQL:
+     *
+     *
+     * Insert objects of goods into stock
+     *
+     * @param goodID good type ID
+     * @param stockID stock ID
+     * @param count amount
+     * @return
+     */
     public static boolean InsertGoodIntoStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
-        
+
         try {
             stmt = DatabaseD.getConnection().createStatement();
-            
+
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
                     + " VALID_TO > CURRENT_TIMESTAMP"
                     + " AND goods_id = " + goodID + " AND racks_ID = " + stockID);
             int newCount = 0;
-            
+
             if (executeQuery.next()) {
                 newCount = executeQuery.getInt(1) + count;
 
@@ -897,7 +888,7 @@ public class DatabaseD {
                 } else {
                     System.err.println("DOOMED" + numResults);
                 }
-                
+
                 stmt.execute("INSERT INTO rack_goods VALUES("
                         + stockID + ","
                         + goodID + ","
@@ -918,23 +909,50 @@ public class DatabaseD {
             }
 
         } catch (SQLException ex) {
-              System.err.println("Insert to "+stockID+" failed for good "+goodID+" and count "+count);
-            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("E: Insert to " + stockID + " failed for good " + goodID + " and count " + count);
+            //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
         return true;
     }
-    
+
+    /**
+     * TSQL:
+     *
+     *
+     * Move amount of goods from rack to rack
+     *
+     *
+     *
+     * @param fromGID
+     * @param fromSID
+     * @param toGID
+     * @param toSID
+     * @param count
+     * @return
+     */
     public static boolean MoveGoodFromTo(int fromGID, int fromSID, int toGID, int toSID, int count) {
         boolean removed = RemoveGoodFromStorage(fromGID, fromSID, count);
         boolean inserted = InsertGoodIntoStorage(toGID, toSID, count);
         return removed && inserted;
     }
-    
+
+    /**
+     * TSQL:
+     *
+     *
+     * Remove amount for goods from rack
+     *
+     *
+     * @param goodID
+     * @param stockID
+     * @param count
+     * @return
+     */
     public static boolean RemoveGoodFromStorage(int goodID, int stockID, int count) {
         Statement stmt = null;
-        
+
         try {
-            
+
             stmt = DatabaseD.getConnection().createStatement();
 
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods_count FROM rack_goods WHERE"
@@ -947,7 +965,7 @@ public class DatabaseD {
             executeQuery = stmt.executeQuery("SELECT COUNT(rack_goods_count) FROM rack_goods WHERE"
                     + " VALID_TO > CURRENT_TIMESTAMP"
                     + " AND goods_id = " + goodID + " AND racks_ID = " + stockID);
-            
+
             int numResults = 0;
             if (executeQuery.next()) {
                 numResults = executeQuery.getInt(1);
@@ -959,14 +977,14 @@ public class DatabaseD {
                         + "AND valid_to = TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                         + "");
             }
-            
+
             DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
 
         } catch (SQLException ex) {
-            System.err.println("Remove from "+stockID+" failed for good "+goodID+" and count "+count);
-            Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("E: Remove from " + stockID + " failed for good " + goodID + " and count " + count);
+            //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return true;
     }
 
@@ -976,7 +994,7 @@ public class DatabaseD {
      * @return
      */
     public static ObservableList<StoreActivityRecord> GetStoreHistory() {
-        
+
         ObservableList<StoreActivityRecord> data = FXCollections.observableArrayList();
 
         try (Connection connection = dataSource.getConnection()) {
@@ -1047,15 +1065,23 @@ public class DatabaseD {
         return data;
     }
 
+    /**
+     * TSQL:
+     *
+     * Get goods in rack
+     *
+     * @param rackID
+     * @return
+     */
     public static ObservableList<GoodInRack> getGoodsInRack(int rackID) {
         ObservableList<GoodInRack> ret = FXCollections.observableArrayList();
         Statement stmt;
-        try{
-              stmt = DatabaseD.getConnection().createStatement();
-            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name FROM rack_goods INNER JOIN goods \n" +
-                    "ON rack_goods.goods_id=goods.goods_id\n" +
-                    "WHERE rack_goods.valid_to > CURRENT_TIMESTAMP AND rack_goods.racks_id = "+ rackID);
-            
+        try {
+            stmt = DatabaseD.getConnection().createStatement();
+            ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name FROM rack_goods INNER JOIN goods \n"
+                    + "ON rack_goods.goods_id=goods.goods_id\n"
+                    + "WHERE rack_goods.valid_to > CURRENT_TIMESTAMP AND rack_goods.racks_id = " + rackID);
+
             while (executeQuery.next()) {
                 ret.add(new GoodInRack(
                         executeQuery.getInt(2),
@@ -1064,14 +1090,13 @@ public class DatabaseD {
                         executeQuery.getString(4)
                 ));
             }
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return ret;
     }
-
 
     public DatabaseD() {
     }
