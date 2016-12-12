@@ -23,7 +23,9 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
 
     // Text constants used across the dialog
     private static final String ASK_GOOD_DIALOG_TITLE = "Určete počet a typ zboží";
+    private static final String ASK_GOOD_DIALOG_TITLE_2 = "Vyberte hledaný typ zboží.";
     private static final String ASK_GOOD_DIALOG_HEADERTEXT = "Zvolte:";
+    private static final String ASK_GOOD_DIALOG_HEADERTEXT_2 = "Vyberte hledané zboží ze seznamu:";
     private static final String ASK_GOOD_CONFIRM_BUTTON = "Proveď";
     private static final String ASK_GOOD_COUNT_TEXTFIELD = "Počet zboží";
     private static final String ASK_GOOD_COUNT_LABEL = "Počet";
@@ -35,6 +37,7 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
     private TextField count;
     private ComboBox cb;
     private Node confirmButton;
+    private boolean askForCount;
 
     /**
      * Constructs object which represents one good type in specified rack
@@ -42,7 +45,9 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
      * @param rack specified rack id
      * @param inserting switch between inserting in rack and removing from rack
      */
-    public AddGoodsAndCount(int rack) {
+    public AddGoodsAndCount(int rack, boolean askForCount) {
+
+        this.askForCount = askForCount;
         InitDialog();
 
         CreateDialogLayout(rack);
@@ -57,8 +62,16 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
      *
      */
     private void InitDialog() {
-        setTitle(ASK_GOOD_DIALOG_TITLE);
-        setHeaderText(ASK_GOOD_DIALOG_HEADERTEXT);
+        if (askForCount)
+        {
+            setTitle(ASK_GOOD_DIALOG_TITLE);
+            setHeaderText(ASK_GOOD_DIALOG_HEADERTEXT);
+        }
+        else
+        {
+            setTitle(ASK_GOOD_DIALOG_TITLE_2);
+            setHeaderText(ASK_GOOD_DIALOG_HEADERTEXT_2);
+        }
 
         initModality(Modality.APPLICATION_MODAL);
 
@@ -83,8 +96,12 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        grid.add(new Label(ASK_GOOD_COUNT_LABEL), 0, 0);
-        grid.add(count, 1, 0);
+        if (askForCount)
+        {
+            grid.add(new Label(ASK_GOOD_COUNT_LABEL), 0, 0);
+            grid.add(count, 1, 0);
+        }
+
         grid.add(new Label(ASK_GOOD_CB_LABEL), 0, 1);
         grid.add(cb, 1, 1);
 
@@ -102,7 +119,14 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
      */
     private void CreateControlsPreloadData(int rack) {
         count = new TextField();
-        count.setPromptText(ASK_GOOD_COUNT_TEXTFIELD);
+        if (askForCount)
+        {
+            count.setPromptText(ASK_GOOD_COUNT_TEXTFIELD);
+        }
+        else
+        {
+            count.setVisible(false);
+        }
 
         ObservableList<GoodTypeRecord> data = GoodTypeRecord.getData();
         while (data.isEmpty()) {// Fujky fuj
@@ -126,11 +150,23 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
             //  System.err.println("disablee: "+(Integer.parseInt(newValue) <= ((GoodInRack) cb.getValue()).getCount())+Integer.parseInt(newValue)+"<="+((GoodInRack) cb.getValue()).getCount());
             confirmButton.setDisable(newValue.isEmpty());
         });
-        confirmButton.setDisable(true);
+        if (!askForCount)
+        {
+            confirmButton.setDisable(false);
+        }
+        else
+        {
+            confirmButton.setDisable(true);
+        }
+
 
         setResultConverter(dialogButton -> {
             if (dialogButton == confirmButtonType) {
-                return new Pair<>(Integer.parseInt(count.getText()), (GoodTypeRecord) cb.getValue());
+
+                if (askForCount)
+                {return new Pair<>(Integer.parseInt(count.getText()), (GoodTypeRecord) cb.getValue());}
+                else
+                {return new Pair<>(-1, (GoodTypeRecord) cb.getValue());}
             }
             return null;
         });

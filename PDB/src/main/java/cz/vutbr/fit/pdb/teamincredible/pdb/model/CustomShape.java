@@ -17,6 +17,8 @@ public class CustomShape {
     private int rackTypeId;
     private int id;
     private boolean deleted;
+    private Point centerPoint;
+    private boolean deleteAfterAction = false;
 
     public CustomShape(Shape shape, int rackTypeId, int id)
     {
@@ -29,7 +31,20 @@ public class CustomShape {
         this.selected = false;
         this.rackTypeId = rackTypeId;
         this.id  = id;
-        deleted = false;
+        this.deleted = false;
+        this.centerPoint = new Point((((int) shape.getBounds().getCenterX())), ((int) shape.getBounds().getCenterY()));
+    }
+
+    public void setDeleteAfterAction(boolean deleteAfterAction) {
+        this.deleteAfterAction = deleteAfterAction;
+    }
+
+    public boolean getDeleteAfterAction() {
+        return deleteAfterAction;
+    }
+
+    public Point getCenterPoint() {
+        return centerPoint;
     }
 
     public Shape getShape()

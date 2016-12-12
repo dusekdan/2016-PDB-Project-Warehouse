@@ -2,8 +2,12 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomShape;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore;
+import javafx.scene.shape.Circle;
+import oracle.spatial.geometry.JGeometry;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.*;
 import java.util.List;
@@ -16,10 +20,45 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.sha
 public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
 
     public Color filling = Color.GRAY;
-    private static final List<CustomShape> privateShapeList = shapeList;
+    public static List<CustomShape> privateShapeList = shapeList;
+    public static int status;
+    public static final int NONE = 0;
+    public static final int SELECT_POINT = 1;
+    public static final int SELECT_RACKS_TO_JOIN = 2;
 
-    public void SpatialViewerForStore()
+    public SpatialViewerForQueryingStore()
     {
+        status = NONE;
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                System.out.println("Clicked on point " + e.getPoint());
+                if (status == SELECT_POINT)
+                    drawSelectedPoint(e.getPoint());
+                repaint();
+            }
+        });
+    }
+
+    private void drawSelectedPoint(Point clickedPoint) {
+
+        JGeometry selectedJgeometry = new JGeometry(clickedPoint.getX()-2.5, clickedPoint.getY()-2.5 , clickedPoint.getX() + 2.5, clickedPoint.getY()+ 2.5, 0);
+        selectedJgeometry = selectedJgeometry.createCircle(clickedPoint.getX(), clickedPoint.getY(), 6, 0);
+
+        Shape shape = selectedJgeometry.createShape();
+        CustomShape selectedPoint = new CustomShape(shape, -1,-1);
+
+        CustomShape lastSelectedPoint = null;
+        lastSelectedPoint = getSelectedShapeObject();
+        if (lastSelectedPoint != null)
+        {
+            lastSelectedPoint.unSelect();
+            privateShapeList.remove(lastSelectedPoint);
+        }
+        selectedPoint.setSelected();
+        selectedPoint.setDeleteAfterAction(true);
+        privateShapeList.add(selectedPoint);
 
     }
 
@@ -56,6 +95,10 @@ public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
             Point translationPoint = shapeObject.getTranslation();
             g2D.translate(translationPoint.x, translationPoint.y);
 
+            if (shapeObject.isSelected())
+                filling = Color.RED;
+            else
+                filling = Color.GRAY;
             g2D.setPaint(filling);
             g2D.fill(shapeObject.getShape());
             // draw a boundary of the shape
@@ -63,6 +106,45 @@ public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
             g2D.draw(shapeObject.getShape());
 
             g2D.setTransform(old);
+        }
+    }
+
+    public static CustomShape getSelectedShapeObject()
+    {
+        for (CustomShape shapeObject : privateShapeList)
+        {
+            if (shapeObject.isSelected())
+                return shapeObject;
+        }
+        return null;
+    }
+
+    public static CustomShape getShapeById(int id)
+    {
+        for (CustomShape shapeObject : privateShapeList)
+        {
+            if (shapeObject.getId() == id)
+                return shapeObject;
+        }
+        return null;
+    }
+
+    public static void unselectAllShapes()
+    {
+        for (CustomShape shapeObject : privateShapeList)
+        {
+            shapeObject.unSelect();
+        }
+    }
+
+
+    public static void deleteAllTemporalShapes()
+    {
+        for (Iterator<CustomShape> iterator = privateShapeList.iterator(); iterator.hasNext(); ) {
+            CustomShape shapeObject = iterator.next();
+            if (shapeObject.getDeleteAfterAction()) {
+                iterator.remove();
+            }
         }
     }
 }
