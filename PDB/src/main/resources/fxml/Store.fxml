@@ -65,6 +65,14 @@
                        <Insets bottom="5.0"/>
                    </padding>
                </ButtonBar>
+               <ButtonBar fx:id="queryButtonBar2" prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+                   <buttons>
+                       <Text  fx:id="textMoreInfoQuery" text=".." />
+                      </buttons>
+                   <padding>
+                       <Insets bottom="5.0"/>
+                   </padding>
+               </ButtonBar>
            </children>
        </VBox>
    </bottom>

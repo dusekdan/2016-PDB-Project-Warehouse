@@ -39,6 +39,9 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodsAndCount;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.AskForGoodsAndCount;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForAvailableRacks;
 import javafx.util.Pair;
+
+import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.SpatialViewerForQueryingStore.NONE;
+import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.SpatialViewerForQueryingStore.SELECT_POINT;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.shapeList;
 
 /**
@@ -52,7 +55,12 @@ public class StoreController implements Initializable {
     private static final String QUERY_STR_COUNT_USED_AREA = "Vypočítat celkovou zastavěnou plochu skladu.";
     private static final String QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX = "Vypočítat nejmenší možnou velikost skladu s těmito stojany.";
     private static final String QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS = "Zobrazit všechny stojany obsahující zboží jisté vlastnosti.";
+    private static final String QUERY_STR_JOIN_RACKS = "Sloučit dva stojany.";
 
+    @FXML
+    private ButtonBar queryButtonBar2;
+    @FXML
+    private javafx.scene.text.Text textMoreInfoQuery;
     @FXML
     private ButtonBar modificationButtonBar2;
     @FXML
@@ -106,12 +114,13 @@ public class StoreController implements Initializable {
         setUIForModification();
 
         comboboxQuery.getItems().addAll(
-                QUERY_STR_SHOW_ITEMS_FROM,
+                //QUERY_STR_SHOW_ITEMS_FROM,
                 QUERY_STR_SHORTEST_WAY_TO_ITEM,
-                QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM,
+                //QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM,
                 QUERY_STR_COUNT_USED_AREA,
-                QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
-                QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
+                QUERY_STR_JOIN_RACKS
+                //QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
+                //QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
         );
     }
 
@@ -384,7 +393,7 @@ public class StoreController implements Initializable {
         int goodId;
         int count;
 
-        Optional<Pair<Integer, GoodTypeRecord>> res = new AddGoodsAndCount(rackId).showAndWait();
+        Optional<Pair<Integer, GoodTypeRecord>> res = new AddGoodsAndCount(rackId, true).showAndWait();
 
         if (!res.isPresent()) {
             return;
@@ -460,16 +469,19 @@ public class StoreController implements Initializable {
 
         refreshStore(false);
         setUIForModification();
+        SpatialViewerForQueryingStore.status = NONE;
     }
 
     public void queryMode(ActionEvent actionEvent) {
-
         saveStore();
         showQueryMode();
         setUIforQuerying();
+        SpatialViewerForQueryingStore.unselectAllShapes();
+        SpatialViewerForQueryingStore.status = NONE;
     }
 
     private void showQueryMode() {
+
 
         StoreACP.getChildren().remove(0);
 
@@ -507,12 +519,38 @@ public class StoreController implements Initializable {
             case QUERY_STR_SHOW_ITEMS_FROM:
                 break;
             case QUERY_STR_SHORTEST_WAY_TO_ITEM:
+
+                if (SpatialViewerForQueryingStore.getSelectedShapeObject() != null)
+                {
+                    Optional<Pair<Integer, GoodTypeRecord>> res = new AddGoodsAndCount(rackFromId, false).showAndWait();
+                    if (!res.isPresent())
+                    {
+                        DisplayInformation("Něco se pokazilo.", "Zkuste prosím opakovat akci.");
+                    }
+                    else
+                    {
+                        int goodId = res.get().getValue().goodIdProperty().getValue();
+                        if (executeShortestWayToItem(goodId))
+                        {
+                            showQueryMode();
+                            showMoreInformationForQuery("");
+                            SpatialViewerForQueryingStore.status = NONE;
+                        }
+                    }
+                }
+                else
+                {
+                    DisplayInformation("Něco se pokazilo.", "Vyberte prosím bod, od kterého chcete měřit vzdálenost.");
+                }
                 break;
             case QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM:
                 break;
             case QUERY_STR_COUNT_USED_AREA:
+                showMoreInformationForQuery("Počítám celkovou rozlohu stojanů ve skladu...");
                 double area = countUsedArea();
                 DisplayInformation("Výsledek dotazu", "Celková zastavěná plocha skladu činí " + area + "m krychlových");
+                showMoreInformationForQuery("");
+                SpatialViewerForQueryingStore.status = NONE;
                 break;
             case QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX:
                 break;
@@ -523,6 +561,65 @@ public class StoreController implements Initializable {
 
     }
 
+    private boolean executeShortestWayToItem(int goodId) {
+
+        CustomShape selectedPoint = null;
+        selectedPoint = SpatialViewerForQueryingStore.getSelectedShapeObject();
+
+        if (selectedPoint == null)
+        {
+            return false;
+        }
+        else
+        {
+
+            int nearestRackID = -1;
+
+            try (Connection dbConnection = DatabaseD.getConnection()) {
+
+                dbConnection.setAutoCommit(false);
+                try (
+                        PreparedStatement selectStatement = dbConnection.prepareStatement("SELECT r.racks_id, SDO_GEOM.SDO_DISTANCE(r.racks_geometry, SDO_GEOMETRY(2001, null, SDO_POINT_TYPE(?,?,NULL), NULL, NULL) , 0.005) as distance FROM racks r join rack_goods rg on r.racks_id=rg.racks_id where rg.goods_id=? order by distance fetch first 1 rows only");
+                        )
+                {
+
+                    selectStatement.setInt(1, selectedPoint.getCenterPoint().x);
+                    selectStatement.setInt(2, selectedPoint.getCenterPoint().y);
+                    selectStatement.setInt(3, goodId);
+                    ResultSet resultSet = selectStatement.executeQuery();
+
+                    while (resultSet.next()) {
+                        nearestRackID = resultSet.getInt("racks_id");
+
+                    }
+                    resultSet.close();
+
+                    CustomShape nearestRack = null;
+                    if (nearestRackID != -1)
+                    {
+                        nearestRack = SpatialViewerForQueryingStore.getShapeById(nearestRackID);
+                        if (nearestRack != null)
+                        {
+                            SpatialViewerForQueryingStore.unselectAllShapes();
+                            nearestRack.setSelected();
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        DisplayInformation("Něco se pokazilo.", "Toto zboží se nenachází v žádném stojanu, zkuste prosím opakovat akci.");
+                    }
+
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        DisplayInformation("Něco se pokazilo.", "Zkuste prosím opakovat akci.");
+        return false;
+    }
+
     private void setUIForModification() {
         modificationModeButton.setSelected(true);
         queryModeButton.setSelected(false);
@@ -530,6 +627,9 @@ public class StoreController implements Initializable {
         queryButtonBar.setPrefHeight(0.0);
         queryButtonBar.setDisable(true);
         queryButtonBar.setVisible(false);
+        queryButtonBar2.setPrefHeight(0.0);
+        queryButtonBar2.setDisable(true);
+        queryButtonBar2.setVisible(false);
         modificationButtonBar.setPrefHeight(40.0);
         modificationButtonBar.setVisible(true);
         modificationButtonBar.setDisable(false);
@@ -542,6 +642,9 @@ public class StoreController implements Initializable {
         queryButtonBar.setPrefHeight(40.0);
         queryButtonBar.setVisible(true);
         queryButtonBar.setDisable(false);
+        queryButtonBar2.setPrefHeight(40.0);
+        queryButtonBar2.setVisible(true);
+        queryButtonBar2.setDisable(false);
         modificationButtonBar.setPrefHeight(0.0);
         modificationButtonBar.setVisible(false);
         modificationButtonBar.setDisable(true);
@@ -555,11 +658,17 @@ public class StoreController implements Initializable {
 
     public void comboboxQuerySelected(ActionEvent actionEvent) {
 
+        SpatialViewerForQueryingStore.unselectAllShapes();
+        SpatialViewerForQueryingStore.deleteAllTemporalShapes();
+        showMoreInformationForQuery("");
+
         switch (comboboxQuery.getValue().toString())
         {
             case QUERY_STR_SHOW_ITEMS_FROM:
                 break;
             case QUERY_STR_SHORTEST_WAY_TO_ITEM:
+                showMoreInformationForQuery("Klikněte do prostoru skadu odkud chcete měřit vzdálenost a potvrďte odesláním dotazu.");
+                SpatialViewerForQueryingStore.status = SELECT_POINT;
                 break;
             case QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM:
                 break;
@@ -572,6 +681,11 @@ public class StoreController implements Initializable {
 
         }
 
+    }
+
+    private void showMoreInformationForQuery(String message) {
+        textMoreInfoQuery.setText(message);
+        textSelectQuery.setVisible(true);
     }
 
     private double countUsedArea() {
