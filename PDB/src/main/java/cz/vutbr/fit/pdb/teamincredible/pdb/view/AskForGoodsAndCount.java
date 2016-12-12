@@ -1,8 +1,6 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
-import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
-import cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -42,7 +40,6 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
      * Constructs object which represents one good type in specified rack
      *
      * @param rack specified rack id
-     * @param inserting switch between inserting in rack and removing from rack
      */
     public AskForGoodsAndCount(int rack) {
         InitDialog();
@@ -70,7 +67,6 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
      * Create dialog layout grid
      *
      * @param rack
-     * @param inserting
      */
     private void CreateDialogLayout(int rack) {
 
@@ -100,7 +96,6 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
      * create dialog controls and load data from database
      *
      * @param rack id of rack
-     * @param inserting is dialog used for insert new amount
      */
     private void CreateControlsPreloadData(int rack) {
         count = new TextField();
@@ -127,7 +122,6 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
     /**
      * set converters and listeners
      *
-     * @param inserting add listener for check amount of goods in rack
      */
     private void SetConverters() {
 

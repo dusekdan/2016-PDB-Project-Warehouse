@@ -43,7 +43,7 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
      * Constructs object which represents one good type in specified rack
      *
      * @param rack specified rack id
-     * @param inserting switch between inserting in rack and removing from rack
+     * @param askForCount used for switching labels
      */
     public AddGoodsAndCount(int rack, boolean askForCount) {
 
@@ -81,7 +81,6 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
      * Create dialog layout grid
      *
      * @param rack
-     * @param inserting
      */
     private void CreateDialogLayout(int rack) {
 
@@ -115,7 +114,6 @@ public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
      * create dialog controls and load data from database
      *
      * @param rack id of rack
-     * @param inserting is dialog used for insert new amount
      */
     private void CreateControlsPreloadData(int rack) {
         count = new TextField();

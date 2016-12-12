@@ -33,7 +33,10 @@ import javafx.util.Pair;
  * @author Sucha
  */
 public class HistoryChartController implements Initializable {
-
+    
+    /**
+     * FXML injects
+     */
     @FXML
     private LineChart historyChart;
     @FXML

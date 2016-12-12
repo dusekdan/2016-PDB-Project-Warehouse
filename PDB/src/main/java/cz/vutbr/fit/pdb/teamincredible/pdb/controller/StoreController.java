@@ -361,7 +361,10 @@ public class StoreController implements Initializable {
 
         return true;
     }
-
+    /**
+     * look for selected shape: check for inserting goods into rack
+     * @return selected object id
+     */
     private int isSomethingSelected() {
         for (CustomShape rack : SpatialViewerForStore.shapeList) {
             if (rack.isSelected()) {
@@ -372,7 +375,9 @@ public class StoreController implements Initializable {
         return 0;
 
     }
-
+    /**
+     * add good in selected rack, 
+     */
     public void addGoodInRack() {
         int rackId = isSomethingSelected();
         if (rackId == 0) {
@@ -399,7 +404,9 @@ public class StoreController implements Initializable {
         }
 
     }
-
+    /**
+     * remove good from selected rack
+     */
     public void removeGoodFromRack() {
         int rackId = isSomethingSelected();
         if (rackId == 0) {
@@ -420,7 +427,9 @@ public class StoreController implements Initializable {
         DatabaseD.RemoveGoodFromStorage(goodId, rackId, count);
         DisplayInformation("Úspěch", "Ze stojanu č. " + rackId + " bylo odebráno " + count + " kus/ů zboží " + goodId + ".");
     }
-
+/**
+ * move goods from rack to rack, two steps: select + how much remove, select and insert;
+ */
     public void moveGoodFromToRack() {
         if (movePrepare) {
             this.rackFromId = isSomethingSelected();

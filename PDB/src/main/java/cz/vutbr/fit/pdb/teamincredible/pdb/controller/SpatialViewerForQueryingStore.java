@@ -1,8 +1,6 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomShape;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore;
-import javafx.scene.shape.Circle;
 import oracle.spatial.geometry.JGeometry;
 
 import java.awt.*;
