@@ -838,28 +838,28 @@ public class DatabaseD {
      */
     public static boolean InsertDummyGoodTypesData()
     {
-        String pathToFile1 = MainApp.class.getResource("/images/civka1.jpg").getPath();
+        String pathToFile1 = DatabaseD.class.getClassLoader().getResource("images/civka1.jpg").getPath();
         Good good1 = new Good("Cívka", 250.00, pathToFile1, 1000);
 
-        String pathToFile2 = MainApp.class.getResource("/images/conductor.jpg").getPath();
+        String pathToFile2 = DatabaseD.class.getClassLoader().getResource("images/conductor.jpg").getPath();
         Good good2 = new Good("Kondenzátor", 150.00, pathToFile2, 400);
 
-        String pathToFile3 = MainApp.class.getResource("/images/head-set1.jpg").getPath();
+        String pathToFile3 = DatabaseD.class.getClassLoader().getResource("images/head-set1.jpg").getPath();
         Good good3 = new Good("Sluchátka KOSS", 500.00, pathToFile3, 1200);
 
-        String pathToFile4 = MainApp.class.getResource("/images/led-tv1.jpg").getPath();
+        String pathToFile4 = DatabaseD.class.getClassLoader().getResource("images/led-tv1.jpg").getPath();
         Good good4 = new Good("Led Televize Sencor", 2000.00, pathToFile4, 16000);
 
-        String pathToFile5 = MainApp.class.getResource("/images/mp3-player1.jpg").getPath();
+        String pathToFile5 = DatabaseD.class.getClassLoader().getResource("images/mp3-player1.jpg").getPath();
         Good good5 = new Good("MP3 přehrávač Iriver", 400.00, pathToFile5, 2000);
 
-        String pathToFile6 = MainApp.class.getResource("/images/notebook.jpg").getPath();
+        String pathToFile6 = DatabaseD.class.getClassLoader().getResource("images/notebook.jpg").getPath();
         Good good6 = new Good("Jetý notebook", 1200.00, pathToFile6, 8000);
 
-        String pathToFile7 = MainApp.class.getResource("/images/tablet.jpg").getPath();
+        String pathToFile7 = DatabaseD.class.getClassLoader().getResource("images/tablet.jpg").getPath();
         Good good7 = new Good("Explozivní tablet Samsung", 800.00, pathToFile7, 4000);
 
-        String pathToFile8 = MainApp.class.getResource("/images/tablet2.jpg").getPath();
+        String pathToFile8 = DatabaseD.class.getClassLoader().getResource("images/tablet2.jpg").getPath();
         Good good8 = new Good("Podobný tablet Samsung", 800.00, pathToFile8, 4000);
 
         return InsertGood(good1) && InsertGood(good2) && InsertGood(good3)
