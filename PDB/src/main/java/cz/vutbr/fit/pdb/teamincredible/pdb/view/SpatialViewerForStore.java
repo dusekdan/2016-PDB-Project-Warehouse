@@ -287,9 +287,7 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             if (getGoodsInRack(deletedShape.getId()) != null && getGoodsInRack(deletedShape.getId()).size() > 0 )
             {
 
-                JOptionPane.showMessageDialog(getParent(),
-                        "Stojan nelze odstranit, protože není prázdný, odstraňte z něj zboží a opakujte akci.",
-                        "Chyba",
+                JOptionPane.showMessageDialog(getParent(),"Chyba", "Stojan nelze odstranit protože není prázdný",
                         JOptionPane.ERROR_MESSAGE);
 
                 return;
