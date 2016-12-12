@@ -58,7 +58,7 @@
                <ButtonBar fx:id="queryButtonBar" prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
                    <buttons>
                        <Text  fx:id="textSelectQuery" text="Vyber typ dotazu" />
-                       <ComboBox prefWidth="165" fx:id="comboboxQuery" />
+                       <ComboBox prefWidth="165" fx:id="comboboxQuery" onAction="#comboboxQuerySelected" />
                        <Button prefWidth="165" mnemonicParsing="false" text="Proveď dotaz"  fx:id="executeQueryButton" onAction="#executeQuery"/>
                    </buttons>
                    <padding>

@@ -71,6 +71,7 @@ public class Good
         this.price = price;
     }
 
+
     /**
      * Empty constructor, creates tabula-rasa instance of Good object
      */

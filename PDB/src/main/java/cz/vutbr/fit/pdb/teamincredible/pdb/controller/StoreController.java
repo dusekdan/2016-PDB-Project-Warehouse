@@ -45,6 +45,12 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.sha
  */
 public class StoreController implements Initializable {
 
+    private static final String QUERY_STR_SHOW_ITEMS_FROM = "Zobrazit zboží z vybrané plochy.";
+    private static final String QUERY_STR_SHORTEST_WAY_TO_ITEM = "Spočítat nejkratší cestu ke zboží z vybraného místa.";
+    private static final String QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM = "Zobrazit zboží určité vlastnosti z vybrané plochy.";
+    private static final String QUERY_STR_COUNT_USED_AREA = "Vypočítat celkovou zastavěnou plochu skladu.";
+    private static final String QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX = "Vypočítat nejmenší možnou velikost skladu s těmito stojany.";
+    private static final String QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS = "Zobrazit všechny stojany obsahující zboží jisté vlastnosti.";
 
     @FXML
     private ButtonBar modificationButtonBar2;
@@ -78,6 +84,9 @@ public class StoreController implements Initializable {
     private int rackToId;
     private int goodToId;
 
+
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("StoreController init");
@@ -96,12 +105,12 @@ public class StoreController implements Initializable {
         setUIForModification();
 
         comboboxQuery.getItems().addAll(
-                "Zobrazit zboží z vybrané plochy.",
-                "Spočítat nejkratší cestu ke zboží z vybraného místa.",
-                "Zobrazit zboží určité vlastnosti z vybrané plochy.",
-                "Vypočítat celkovou zastavěnou plochu skladu.",
-                "Vypočítat nejmenší možnou velikost skladu s těmito stojany.",
-                "Zobrazit všechny stojany obsahující zboží jisté vlastnosti."
+                QUERY_STR_SHOW_ITEMS_FROM,
+                QUERY_STR_SHORTEST_WAY_TO_ITEM,
+                QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM,
+                QUERY_STR_COUNT_USED_AREA,
+                QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
+                QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
         );
     }
 
@@ -449,11 +458,12 @@ public class StoreController implements Initializable {
     public void modificationMode(ActionEvent actionEvent) {
 
         refreshStore(false);
-
         setUIForModification();
     }
 
     public void queryMode(ActionEvent actionEvent) {
+
+        saveStore();
         showQueryMode();
         setUIforQuerying();
     }
@@ -488,7 +498,28 @@ public class StoreController implements Initializable {
     }
 
     public void executeQuery(ActionEvent actionEvent) {
-        System.out.println("Selected query: " + comboboxQuery.getValue().toString());
+
+        System.out.println("Selected query: " + comboboxQuery.getValue());
+
+        switch (comboboxQuery.getValue().toString())
+        {
+            case QUERY_STR_SHOW_ITEMS_FROM:
+                break;
+            case QUERY_STR_SHORTEST_WAY_TO_ITEM:
+                break;
+            case QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM:
+                break;
+            case QUERY_STR_COUNT_USED_AREA:
+                double area = countUsedArea();
+                DisplayInformation("Výsledek dotazu", "Celková zastavěná plocha skladu činí " + area + "m krychlových");
+                break;
+            case QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX:
+                break;
+            case QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS:
+                break;
+
+        }
+
     }
 
     private void setUIForModification() {
@@ -519,5 +550,54 @@ public class StoreController implements Initializable {
 
         modificationModeButton.setSelected(false);
         queryModeButton.setSelected(true);
+    }
+
+    public void comboboxQuerySelected(ActionEvent actionEvent) {
+
+        switch (comboboxQuery.getValue().toString())
+        {
+            case QUERY_STR_SHOW_ITEMS_FROM:
+                break;
+            case QUERY_STR_SHORTEST_WAY_TO_ITEM:
+                break;
+            case QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM:
+                break;
+            case QUERY_STR_COUNT_USED_AREA:
+                break;
+            case QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX:
+                break;
+            case QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS:
+                break;
+
+        }
+
+    }
+
+    private double countUsedArea() {
+
+        double area = -1;
+
+        try (Connection dbConnection = DatabaseD.getConnection()) {
+            dbConnection.setAutoCommit(false);
+            try (
+                    PreparedStatement selectStatement = dbConnection.prepareStatement("select sum(sdo_geom.sdo_area(racks_geometry,1)) plocha from racks")
+            )
+            {
+                //selectStatement.setInt(1, shapeObject.getRackTypeId());
+                ResultSet resultSet = selectStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    area = resultSet.getDouble(1);
+                }
+                resultSet.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return area;
     }
 }

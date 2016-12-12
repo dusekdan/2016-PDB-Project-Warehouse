@@ -1,6 +1,5 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
-import com.sun.xml.internal.ws.wsdl.writer.document.xsd.Import;
 import javafx.scene.control.Alert;
 
 /**
@@ -13,6 +12,10 @@ public class ImportDBAlert extends Alert {
     private static final String IMPORT_DB_ALERT_HEADER_TEXT = "Opravdu chcete vrátit databázi do původního stavu?";
     private static final String IMPORT_DB_ALERT_CONTENT_TEXT = "Touto akcí smažete všechna aktuální data. Databáze bude vyčištěna a uvedena do původního stavu.";
 
+    /**
+     * Constructor creating alert when importing database
+     * @param alertType AlertType of the dialog to be displayed
+     */
     public ImportDBAlert(AlertType alertType)
     {
         super(alertType);
