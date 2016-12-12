@@ -48,13 +48,18 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
     public static final int KEY_DELETE = 127;
     public static boolean hasChanges;
 
-
+    /**
+     * Constructor
+     *
+     * Loads data from database and initializes listeners
+     * @throws SQLException when data is not loaded from database successfully
+     */
 
     public SpatialViewerForStore() throws SQLException {
         filling = Color.ORANGE;
         // load the Shape objects from a db.
         try {
-            getExistingRacks(shapeList);
+            getExistingRacks();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -278,6 +283,9 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Action when delete button is pressed, deletes rack if it is empty
+     */
     private void deleteShape() {
 
         CustomShape deletedShape = getSelectedShapeObject();
@@ -287,7 +295,9 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             if (getGoodsInRack(deletedShape.getId()) != null && getGoodsInRack(deletedShape.getId()).size() > 0 )
             {
 
-                JOptionPane.showMessageDialog(getParent(),"Chyba", "Stojan nelze odstranit protože není prázdný",
+                JOptionPane.showMessageDialog(getParent(),
+                        "Stojan nelze odstranit, protože není prázdný, odstraňte z něj zboží a opakujte akci.",
+                        "Chyba",
                         JOptionPane.ERROR_MESSAGE);
 
                 return;
@@ -296,7 +306,11 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         }
     }
 
-    private void getExistingRacks(java.util.List<CustomShape> shapeList) throws SQLException {
+    /**
+     * Loads existing racks from spatial database - their rotation and position in the store
+     * @throws SQLException  when data is not loaded from database successfully
+     */
+    private void getExistingRacks() throws SQLException {
 
         // create a OracleDataSource instance
         shapeList.clear();
@@ -331,8 +345,6 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
             System.out.println(e.getMessage());
         }
     }
-
-
 
 
     /**
@@ -390,6 +402,9 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Unselects rack if is someone selected
+     */
     public void unselectAllShapes()
     {
         for (CustomShape shapeObject : shapeList)
@@ -398,6 +413,10 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         }
     }
 
+    /**
+     *
+     * @return selected rack
+     */
     public CustomShape getSelectedShapeObject()
     {
         for (CustomShape shapeObject : shapeList)
@@ -408,14 +427,13 @@ public class SpatialViewerForStore extends javax.swing.JPanel {
         return null;
     }
 
+    /**
+     *
+     * @return true if the store has changes
+     */
     public static boolean hasChanges()
     {
         return hasChanges;
-    }
-
-    public static List<CustomShape> returnAllRacksFromStore()
-    {
-        return shapeList;
     }
 
 
