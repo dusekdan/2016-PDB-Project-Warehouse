@@ -5,10 +5,7 @@ import cz.vutbr.fit.pdb.teamincredible.pdb.SpatialConverters;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomRackDefinition;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.CustomShape;
 import cz.vutbr.fit.pdb.teamincredible.pdb.CustomSwingNode;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.AvailableRacksView;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.ImportDBAlert;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.SaveChangesDialog;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore;
+import cz.vutbr.fit.pdb.teamincredible.pdb.view.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingNode;
@@ -35,13 +32,10 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController.D
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodsAndCount;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.AskForGoodsAndCount;
-import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForAvailableRacks;
 import javafx.util.Pair;
 
-import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.SpatialViewerForQueryingStore.NONE;
-import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.SpatialViewerForQueryingStore.SELECT_POINT;
+import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.SpatialViewerForQueryingStore.*;
+import static cz.vutbr.fit.pdb.teamincredible.pdb.view.QueryingAreaDialog.*;
 import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.shapeList;
 
 /**
@@ -49,9 +43,8 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForStore.sha
  */
 public class StoreController implements Initializable {
 
-    private static final String QUERY_STR_SHOW_ITEMS_FROM = "Zobrazit zboží z vybrané plochy.";
+    private static final String QUERY_STR_SHOW_ITEMS_FROM = "Provést dotaz nad vybranou oblastí.";
     private static final String QUERY_STR_SHORTEST_WAY_TO_ITEM = "Spočítat nejkratší cestu ke zboží z vybraného místa.";
-    private static final String QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM = "Zobrazit zboží určité vlastnosti z vybrané plochy.";
     private static final String QUERY_STR_COUNT_USED_AREA = "Vypočítat celkovou zastavěnou plochu skladu.";
     private static final String QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX = "Vypočítat nejmenší možnou velikost skladu s těmito stojany.";
     private static final String QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS = "Zobrazit všechny stojany obsahující zboží jisté vlastnosti.";
@@ -111,13 +104,12 @@ public class StoreController implements Initializable {
         setUIForModification();
 
         comboboxQuery.getItems().addAll(
-                //QUERY_STR_SHOW_ITEMS_FROM,
+                QUERY_STR_SHOW_ITEMS_FROM,
                 QUERY_STR_SHORTEST_WAY_TO_ITEM,
-                //QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM,
-                QUERY_STR_COUNT_USED_AREA,
-                QUERY_STR_JOIN_RACKS
-        //QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
-        //QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
+                QUERY_STR_COUNT_USED_AREA
+                //QUERY_STR_JOIN_RACKS
+                //QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX,
+                //QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS
         );
     }
 
@@ -515,6 +507,10 @@ public class StoreController implements Initializable {
 
         switch (comboboxQuery.getValue().toString()) {
             case QUERY_STR_SHOW_ITEMS_FROM:
+                if (showDialogForQueryingArea())
+                    SpatialViewerForQueryingStore.status = NONE;
+                else
+                    DisplayInformation("Něco se pokazilo.", "Zkuste prosím opakovat akci.");
                 break;
             case QUERY_STR_SHORTEST_WAY_TO_ITEM:
 
@@ -534,8 +530,6 @@ public class StoreController implements Initializable {
                     DisplayInformation("Něco se pokazilo.", "Vyberte prosím bod, od kterého chcete měřit vzdálenost.");
                 }
                 break;
-            case QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM:
-                break;
             case QUERY_STR_COUNT_USED_AREA:
                 showMoreInformationForQuery("Počítám celkovou rozlohu stojanů ve skladu...");
                 double area = countUsedArea();
@@ -547,9 +541,115 @@ public class StoreController implements Initializable {
                 break;
             case QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS:
                 break;
+            case QUERY_STR_JOIN_RACKS:
+                break;
 
         }
 
+    }
+
+    private boolean showDialogForQueryingArea() {
+
+        String message = "";
+
+        Optional<String> result = new QueryingAreaDialog().showAndWait();
+        if (!result.isPresent())
+        {
+            return false;
+        }
+        else
+        {
+            String query = result.get();
+            if ((message = executeQueryArea(query)) != "")
+            {
+                DisplayInformation("Výsledek dotazu",message);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String executeQueryArea(String query) {
+
+        String result = "";
+        String preparedQuery = "";
+        switch (query)
+        {
+            case REQ_QUERY_SUM:
+                System.out.println(""+REQ_QUERY_SUM);
+
+                preparedQuery = "select  sum(rg.rack_goods_count * g.goods_price) from racks r " +
+                        "  join rack_goods rg on r.racks_id = rg.racks_id" +
+                        "  join goods g on g.goods_id = rg.goods_id" +
+                        "  where SDO_RELATE(r.racks_geometry, SDO_GEOMETRY(2003, NULL, NULL," +
+                        " SDO_ELEM_INFO_ARRAY(1, 1003, 1)," +
+                        " SDO_ORDINATE_ARRAY(?,?,  ?,?,  ?,?,   ?,?,   ?,?)" +
+                        "),  'MASK=ANYINTERACT')='TRUE'";
+
+                break;
+            //case REQ_QUERY_MOST_EXPENSIVE:
+            //case REQ_QUERY_EMPTY:
+            case REQ_QUERY_ITEMS:
+                System.out.println(""+REQ_QUERY_ITEMS);
+
+                preparedQuery = "select  sum(rg.rack_goods_count) from racks r " +
+                        "  join rack_goods rg on r.racks_id = rg.racks_id" +
+                        "  join goods g on g.goods_id = rg.goods_id" +
+                        "  where SDO_RELATE(r.racks_geometry, SDO_GEOMETRY(2003, NULL, NULL," +
+                        " SDO_ELEM_INFO_ARRAY(1, 1003, 1)," +
+                        " SDO_ORDINATE_ARRAY(?,?,  ?,?,  ?,?,   ?,?,   ?,?)" +
+                        "),  'MASK=ANYINTERACT')='TRUE'";
+                break;
+        }
+
+        try (Connection dbConnection = DatabaseD.getConnection()) {
+            dbConnection.setAutoCommit(false);
+            try (
+                    PreparedStatement selectStatement = dbConnection.prepareStatement(preparedQuery)
+            )
+            {
+                selectStatement.setInt(1, ((int) selectedArea.getMinX()));
+                selectStatement.setInt(2, ((int) selectedArea.getMinY()));
+
+                selectStatement.setInt(3, ((int) selectedArea.getMaxX()));
+                selectStatement.setInt(4, ((int) selectedArea.getMinY()));
+
+                selectStatement.setInt(5, ((int) selectedArea.getMaxX()));
+                selectStatement.setInt(6, ((int) selectedArea.getMaxY()));
+
+                selectStatement.setInt(7, ((int) selectedArea.getMinX()));
+                selectStatement.setInt(8, ((int) selectedArea.getMaxY()));
+
+                selectStatement.setInt(9, ((int) selectedArea.getMinX()));
+                selectStatement.setInt(10, ((int) selectedArea.getMinY()));
+
+                ResultSet resultSet = selectStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    switch (query)
+                    {
+                        case REQ_QUERY_SUM:
+                            result = "Celková cena zboží ve vybrané oblasti skladu činí " + resultSet.getDouble(1);
+                            break;
+                        //case REQ_QUERY_MOST_EXPENSIVE:
+                          //  break;
+                        //case REQ_QUERY_EMPTY:
+                          //  break;
+                        case REQ_QUERY_ITEMS:
+                            result = "Celkový počet zboží umístěného ve stojanech ve vybrané oblasti skladu je " + resultSet.getInt(1);
+                            break;
+                    }
+                }
+                resultSet.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     private boolean executeShortestWayToItem(int goodId) {
@@ -583,8 +683,9 @@ public class StoreController implements Initializable {
                     CustomShape nearestRack = null;
                     if (nearestRackID != -1) {
                         nearestRack = SpatialViewerForQueryingStore.getShapeById(nearestRackID);
-                        if (nearestRack != null) {
-                            SpatialViewerForQueryingStore.unselectAllShapes();
+                        if (nearestRack != null)
+                        {
+                            //SpatialViewerForQueryingStore.unselectAllShapes();
                             nearestRack.setSelected();
                             return true;
                         }
@@ -646,18 +747,23 @@ public class StoreController implements Initializable {
 
         switch (comboboxQuery.getValue().toString()) {
             case QUERY_STR_SHOW_ITEMS_FROM:
+                SpatialViewerForQueryingStore.status = SELECT_AREA;
+                showMoreInformationForQuery("Vyberte v prostoru oblast a potvrďte odesláním dotazu.");
                 break;
             case QUERY_STR_SHORTEST_WAY_TO_ITEM:
                 showMoreInformationForQuery("Klikněte do prostoru skadu odkud chcete měřit vzdálenost a potvrďte odesláním dotazu.");
                 SpatialViewerForQueryingStore.status = SELECT_POINT;
                 break;
-            case QUERY_STR_SHOW_ITEMS_WITH_PROPERTY_FROM:
-                break;
             case QUERY_STR_COUNT_USED_AREA:
+                showMoreInformationForQuery("Potvrďte odesláním dotazu.");
                 break;
             case QUERY_STR_COUNT_SMALLEST_BOUNDING_BOX:
                 break;
             case QUERY_STR_SHOW_RACKS_WITH_SPECIFIC_ITEMS:
+                break;
+            case QUERY_STR_JOIN_RACKS:
+                SpatialViewerForQueryingStore.status = SELECT_RACKS_TO_JOIN;
+                showMoreInformationForQuery("Vyberte stojany ke sloučení a potvrďte odesláním dotazu.");
                 break;
 
         }

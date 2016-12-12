@@ -26,7 +26,7 @@ public class CustomShape {
         this.rotation = 0;
         this.boundingBox = shape.getBounds();
         this.boundingBox.width = 3*UNIT;
-        this.boundingBox.height = 4*UNIT;
+        //this.boundingBox.height = 4*UNIT;
         this.translation = new Point(0,0);
         this.selected = false;
         this.rackTypeId = rackTypeId;

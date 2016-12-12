@@ -8,6 +8,7 @@ import oracle.spatial.geometry.JGeometry;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.util.*;
 import java.util.List;
@@ -25,6 +26,8 @@ public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
     public static final int NONE = 0;
     public static final int SELECT_POINT = 1;
     public static final int SELECT_RACKS_TO_JOIN = 2;
+    public static final int SELECT_AREA = 3;
+    public static Rectangle selectedArea;
 
     public SpatialViewerForQueryingStore()
     {
@@ -37,6 +40,32 @@ public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
                 if (status == SELECT_POINT)
                     drawSelectedPoint(e.getPoint());
                 repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                repaint();
+            }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+
+            Point start = new Point();
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                Point end = e.getPoint();
+                selectedArea = new Rectangle(start, new Dimension(end.x-start.x, end.y-start.y));
+                repaint();
+                //System.out.println("Rectangle: "+selectedArea);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                start = e.getPoint();
+                repaint();
+                //System.out.println("Start point: " + start);
             }
         });
     }
@@ -107,6 +136,18 @@ public class SpatialViewerForQueryingStore extends javax.swing.JPanel {
 
             g2D.setTransform(old);
         }
+
+        if (status == SELECT_AREA && selectedArea != null)
+        {
+            filling = Color.RED;
+            g2D.setPaint(filling);
+            g2D.draw(selectedArea);
+            filling = new Color(255,255,255,150);
+            g2D.setPaint(filling);
+            g2D.fill(selectedArea);
+            //System.out.println("Drowing area: " + selectedArea);
+        }
+        filling = Color.GRAY;
     }
 
     public static CustomShape getSelectedShapeObject()
