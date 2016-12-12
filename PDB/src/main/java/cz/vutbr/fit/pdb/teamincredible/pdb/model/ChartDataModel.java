@@ -18,17 +18,19 @@ import javafx.collections.ObservableList;
 public class ChartDataModel {
   public static ObservableList<ChartDataModel> data = FXCollections.observableArrayList();
 
-  Timestamp time;
-  int totalStoreCapacity;
-  List<GoodInRack> goods;
+  public Timestamp time;
+  public int totalStoreCapacity;
+  public List<GoodInRack> goods;
 
     public ChartDataModel(Timestamp time, List<GoodInRack> goods) {
         this.time = time;
         this.goods = goods;
     }
   
-  public static void loadData(Timestamp from, Timestamp to) {
+  public static ObservableList<ChartDataModel> loadData(Timestamp from, Timestamp to) {
       data = DatabaseD.getGraphData(from, to);
+      
+      return data;
   }
   
 }

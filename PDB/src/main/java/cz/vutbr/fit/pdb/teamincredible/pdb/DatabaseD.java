@@ -582,8 +582,9 @@ public class DatabaseD {
         loadInitData();
 
         // Add some basic goods definitions
-        if (InsertDummyGoodTypesData())
+        if (InsertDummyGoodTypesData()) {
             System.out.println("D: Goods dummy data inserted successfully.");
+        }
 
     }
 
@@ -721,7 +722,7 @@ public class DatabaseD {
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,10,   10,10,   10,30,   0,30,  0,0)\n"
                     + "	))");
-            
+
             stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'T', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -729,22 +730,20 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,10,   20,10,   20,20,   10,20,  10,30,   0,30,  0,0)\n"
                     + "	))");
 
-            
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'II', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,30,   0,30,   0,0)\n"
                     + "	))");
-            
-                stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
+
+            stmt.execute("insert into rack_definitions ( RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ( 'III', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  10,0,  10,40,   0,40,   0,0)\n"
                     + "	))");
-            
-            
+
             stmt.execute("insert into rack_definitions (RACK_DEFS_NAME, rack_defs_capacity, rack_defs_size_x, rack_defs_size_y, rack_defs_shape)\n"
                     + "values ('I', 1000, 10, 30, \n"
                     + "SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -772,17 +771,12 @@ public class DatabaseD {
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(0,0,  20,0,  20,20, 0,20,   0,0)\n"
                     + "	))");
-            
-            
-            
-            
+
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (1, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(30,30,  50,30,  50,40,   40,40,   40,60,   30,60,  30,30)\n"
                     + "	), 3)");
-
-       
 
             stmt.execute(" insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (2, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
@@ -790,16 +784,11 @@ public class DatabaseD {
                     + "		SDO_ORDINATE_ARRAY(100,20,  110,20,  110,30,   120,30,   120,40,   110,40,  110,50,   100,50,  100,20)\n"
                     + "	), 0)");
 
-
             stmt.execute("   insert into racks (racks_type, racks_geometry, racks_rotation)\n"
                     + "  values (3, SDO_GEOMETRY(2003, NULL, NULL, -- 2D polygon\n"
                     + "		SDO_ELEM_INFO_ARRAY(1, 1003, 1), -- exterior polygon (counterclockwise)\n"
                     + "		SDO_ORDINATE_ARRAY(50,90,  60,90,  60,120,   50,120,   50,90)\n"
                     + "	), 0)");
-
-        
-
-
 
             // Add some basic goods definitions
             if (InsertDummyGoodTypesData()) {
@@ -1095,17 +1084,43 @@ public class DatabaseD {
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
-         
-        
+
         return ret;
-    }
-    
-    public static ObservableList<ChartDataModel> getGraphData() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public static ObservableList<ChartDataModel> getGraphData(Timestamp from, Timestamp to) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        long step = (to.getTime() - from.getTime()) / 20;
+        long time = from.getTime();
+        ObservableList<ChartDataModel> res = FXCollections.observableArrayList();
+        List<GoodInRack> goods = new ArrayList<>();
+        PreparedStatement stmt = null;
+        try {
+
+            while ( time <= to.getTime()) {
+                stmt = DatabaseD.getConnection().prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
+                        + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
+                        + "WHERE rack_goods.valid_from >= (?) AND rack_goods.valid_from < (?)");
+                stmt.setTimestamp(1, new Timestamp(time-step));
+                stmt.setTimestamp(2, new Timestamp(time+step));
+                ResultSet executeQuery = stmt.executeQuery();
+                goods.clear();
+                while (executeQuery.next()) {
+                    goods.add(new GoodInRack(
+                            executeQuery.getInt(3),
+                            executeQuery.getInt(2),
+                            executeQuery.getInt(1),
+                            executeQuery.getString(4))
+                    );
+                }
+                res.add(new ChartDataModel(new Timestamp(time), goods));
+                time = time + step;
+                stmt.close();
+            }
+
+        } catch (SQLException e) {
+                System.err.println("E: something went wrong during asking for graph data: "+e.getMessage() );
+        }
+        return res;
     }
 
     public DatabaseD() {

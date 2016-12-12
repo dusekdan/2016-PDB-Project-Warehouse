@@ -33,6 +33,12 @@ public class GoodInRack {
      * rack id
      */
     int rackID;
+
+    public int getRackID() {
+        return rackID;
+    }
+    
+    
     /**
      * name of good
      */

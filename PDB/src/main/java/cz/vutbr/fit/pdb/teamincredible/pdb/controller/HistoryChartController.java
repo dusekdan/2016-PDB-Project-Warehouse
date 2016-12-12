@@ -5,18 +5,16 @@
  */
 package cz.vutbr.fit.pdb.teamincredible.pdb.controller;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.ChartDataModel;
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ResourceBundle;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.CategoryAxis;
@@ -33,7 +31,7 @@ import javafx.util.Pair;
 public class HistoryChartController implements Initializable {
 
     @FXML private LineChart historyChart;
-    @FXML private NumberAxis axisX;
+    @FXML private CategoryAxis axisX;
     @FXML private NumberAxis axisY;
     
     
@@ -43,41 +41,47 @@ public class HistoryChartController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Calendar begin = (Calendar) StoreActivityRecord.currentDay.clone();
-        
+        Calendar end =  (Calendar) StoreActivityRecord.currentDay.clone();
+        end.add(Calendar.DATE, 1);
         
         SimpleDateFormat format = new SimpleDateFormat("dd. MMMM");
-        
+        SimpleDateFormat formatTime = new SimpleDateFormat("dd. MMMM, HH:mm:ss,SSS");
         historyChart.setTitle(
                 "Obsazení skladu dne " 
                         + format.format(begin.getTime())
         );
         
-        historyChart.setAxisSortingPolicy(LineChart.SortingPolicy.X_AXIS);
-
-        XYChart.Series history = new XYChart.Series();
-        history.setName("Obsazenost");
+        HashMap<String, XYChart.Series> series = new HashMap<String, XYChart.Series>();
+        ObservableList<ChartDataModel> loadData = ChartDataModel.loadData(new Timestamp(begin.getTime().getTime()), new Timestamp(end.getTime().getTime()));
         
-       HashMap<String, XYChart.Series> series = new HashMap();
-        
-        for (StoreActivityRecord record : StoreActivityRecord.data) {
-            series.put(record.stockIDProperty().getValue()+record.goodIDProperty().getValue(),
-                            new XYChart.Series()
-            );
-            
-        
+        System.err.println(loadData.size());
+        int counter = 0;
+        for (ChartDataModel chartDataModel : loadData) {
+            System.err.println(counter);
+            System.err.println("velikost: "+chartDataModel.goods.size());
+            for (GoodInRack good : chartDataModel.goods) {
+                if(series.containsKey(good.getGoodID()+""+good.getRackID())) {
+                    XYChart.Series get = series.get(good.getGoodID()+""+good.getRackID());
+                    get.getData().add(new XYChart.Data(formatTime.format( chartDataModel.time), good.getCount()));
+                } else {
+                    series.put(good.getGoodID()+""+good.getRackID(), new XYChart.Series());
+                    XYChart.Series get = series.get(good.getGoodID()+""+good.getRackID());
+                    get.getData().add(new XYChart.Data(formatTime.format( chartDataModel.time), good.getCount()));
+                }
+                System.err.println("series: "+good.getGoodID()+""+good.getRackID()+ " time: "+chartDataModel.time+" count: "+good.getCount() );
+            }
+            counter++;
         }
-        axisX.clipProperty();
-        
-        SortedList<StoreActivityRecord> sorted = StoreActivityRecord.data.sorted((StoreActivityRecord t, StoreActivityRecord t1) -> (t.fromTS.compareTo(t1.fromTS)));
-
-        sorted.forEach((record) -> {
-            XYChart.Series get = series.get(record.stockIDProperty().getValue()+record.goodIDProperty().getValue());
-            get.getData().add(new XYChart.Data(record.fromTS.getTime(), record.countProperty().getValue()));
-        });
         
         
         
-            historyChart.getData().addAll(series.values());
+        
+        
+        
+        
+        
+        
+        historyChart.getData().addAll(series.values());
         
     }    
     
