@@ -1380,8 +1380,16 @@ public class DatabaseD {
     }
 
     /**
-     * TSQL:
-     *
+     * TSQL: VALIDTIME PERIOD [now-forever) 
+     *              SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name 
+     *              FROM rack_goods INNER JOIN goods ON rack_goods.goods_id=goods.goods_id
+     *              WHERE rack_goods.racks_id = rackID
+     *  
+     * SQL: SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name
+     *              FROM rack_goods INNER JOIN goods ON rack_goods.goods_id=goods.goods_id
+     *              WHERE rack_goods.valid_to > CURRENT_TIMESTAMP AND rack_goods.racks_id = rackID
+     * 
+     * 
      * Get goods in rack
      *
      * @param rackID
@@ -1413,8 +1421,16 @@ public class DatabaseD {
     }
 
     /**
-     * get goods in racks in specified time
-     *
+     * TSQL: VALIDTIME DATE TO_DATE(time) -- time is timestamp, expect DATE TO_DATE(timestamp tm);
+     *              SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name 
+     *              FROM rack_goods INNER JOIN goods ON rack_goods.goods_id=goods.goods_id
+     *              
+     *  SQL:    SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name
+     *               FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id
+     *               WHERE rack_goods.valid_from <= time AND rack_goods.valid_to > time
+     * 
+     * 
+     * 
      * @param time
      * @return object representing all data
      */
@@ -1426,7 +1442,7 @@ public class DatabaseD {
 
             stmt = connection.prepareStatement("SELECT rack_goods.racks_id, rack_goods.goods_id, rack_goods.rack_goods_count, goods.goods_name"
                     + " FROM rack_goods INNER JOIN goods ON rack_goods.goods_id = goods.goods_id\n"
-                    + "WHERE rack_goods.valid_from <= (?) AND rack_goods.valid_to >= (?)");
+                    + "WHERE rack_goods.valid_from <= (?) AND rack_goods.valid_to > (?)");
 
             stmt.setTimestamp(1, time);
             stmt.setTimestamp(2, time);
@@ -1450,7 +1466,7 @@ public class DatabaseD {
         return res;
     }
 /**
- * Get store total capacity
+ * Get store total capacity -- store is not implementing temporal db, no TSQL
  * @return capacity
  */
     public static int getCapacity() {
