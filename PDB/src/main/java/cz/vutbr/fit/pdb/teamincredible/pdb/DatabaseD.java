@@ -1,5 +1,6 @@
 package cz.vutbr.fit.pdb.teamincredible.pdb;
 
+import cz.vutbr.fit.pdb.teamincredible.pdb.model.ChartDataModel;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.Good;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.StoreActivityRecord;
@@ -906,7 +907,7 @@ public class DatabaseD {
                         + "TO_TIMESTAMP('9999-12-31-23.59.59.999999','YYYY-MM-DD-HH24.MI.SS.FF')"
                         + ")");
             }
-
+            stmt.close();
         } catch (SQLException ex) {
             System.err.println("E: Insert to " + stockID + " failed for good " + goodID + " and count " + count);
             //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
@@ -978,7 +979,7 @@ public class DatabaseD {
             }
 
             DatabaseD.InsertGoodIntoStorage(goodID, stockID, newCount);
-
+            stmt.close();
         } catch (SQLException ex) {
             System.err.println("E: Remove from " + stockID + " failed for good " + goodID + " and count " + count);
             //Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
@@ -1074,7 +1075,7 @@ public class DatabaseD {
      */
     public static ObservableList<GoodInRack> getGoodsInRack(int rackID) {
         ObservableList<GoodInRack> ret = FXCollections.observableArrayList();
-        Statement stmt;
+        Statement stmt = null;
         try {
             stmt = DatabaseD.getConnection().createStatement();
             ResultSet executeQuery = stmt.executeQuery("SELECT rack_goods.racks_id, rack_goods.rack_goods_count, goods.goods_id, goods.goods_name FROM rack_goods INNER JOIN goods \n"
@@ -1090,11 +1091,21 @@ public class DatabaseD {
                 ));
             }
 
+            stmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseD.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+         
+        
         return ret;
+    }
+    
+    public static ObservableList<ChartDataModel> getGraphData() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static ObservableList<ChartDataModel> getGraphData(Timestamp from, Timestamp to) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public DatabaseD() {

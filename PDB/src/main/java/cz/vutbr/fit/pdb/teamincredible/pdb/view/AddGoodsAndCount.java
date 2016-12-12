@@ -2,11 +2,9 @@ package cz.vutbr.fit.pdb.teamincredible.pdb.view;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
-import cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -21,7 +19,7 @@ import javafx.util.Pair;
  *
  * @author Sucha
  */
-public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
+public class AddGoodsAndCount extends Dialog<Pair<Integer, GoodTypeRecord>> {
 
     // Text constants used across the dialog
     private static final String ASK_GOOD_DIALOG_TITLE = "Určete počet a typ zboží";
@@ -44,7 +42,7 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
      * @param rack specified rack id
      * @param inserting switch between inserting in rack and removing from rack
      */
-    public AskForGoodsAndCount(int rack) {
+    public AddGoodsAndCount(int rack) {
         InitDialog();
 
         CreateDialogLayout(rack);
@@ -106,18 +104,11 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
         count = new TextField();
         count.setPromptText(ASK_GOOD_COUNT_TEXTFIELD);
 
-        ObservableList<GoodInRack> data;
-        data = GoodInRack.loadData(rack);
-    
-        if (data.isEmpty()) {
-            Alert info = new Alert(Alert.AlertType.INFORMATION);
-            info.setHeaderText("Info");
-            info.setTitle("Nic nenalezeno");
-            info.setContentText("Rack č. "+ rack+ " je prázdný");
-            info.showAndWait();
-            close();
+        ObservableList<GoodTypeRecord> data = GoodTypeRecord.getData();
+        while (data.isEmpty()) {// Fujky fuj
+            data = GoodTypeRecord.getData();
         }
-        
+
         cb = new ComboBox(data);
         //     ComboBox cb = new ComboBox(GoodTypeRecord.getData());
         cb.getSelectionModel().selectFirst();
@@ -133,13 +124,13 @@ public class AskForGoodsAndCount extends Dialog<Pair<Integer, GoodInRack>> {
 
         count.textProperty().addListener((observable, oldValue, newValue) -> {
             //  System.err.println("disablee: "+(Integer.parseInt(newValue) <= ((GoodInRack) cb.getValue()).getCount())+Integer.parseInt(newValue)+"<="+((GoodInRack) cb.getValue()).getCount());
-            confirmButton.setDisable(Integer.parseInt(newValue) > ((GoodInRack) cb.getValue()).getCount());
+            confirmButton.setDisable(newValue.isEmpty());
         });
         confirmButton.setDisable(true);
 
         setResultConverter(dialogButton -> {
             if (dialogButton == confirmButtonType) {
-                return new Pair<>(Integer.parseInt(count.getText()), (GoodInRack) cb.getValue());
+                return new Pair<>(Integer.parseInt(count.getText()), (GoodTypeRecord) cb.getValue());
             }
             return null;
         });

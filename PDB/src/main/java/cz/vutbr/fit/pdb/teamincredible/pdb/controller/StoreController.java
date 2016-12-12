@@ -35,6 +35,7 @@ import static cz.vutbr.fit.pdb.teamincredible.pdb.controller.ActionsController.D
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodInRack;
 
 import cz.vutbr.fit.pdb.teamincredible.pdb.model.GoodTypeRecord;
+import cz.vutbr.fit.pdb.teamincredible.pdb.view.AddGoodsAndCount;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.AskForGoodsAndCount;
 import cz.vutbr.fit.pdb.teamincredible.pdb.view.SpatialViewerForAvailableRacks;
 import javafx.util.Pair;
@@ -383,12 +384,12 @@ public class StoreController implements Initializable {
         int goodId;
         int count;
 
-        Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackId, true).showAndWait();
+        Optional<Pair<Integer, GoodTypeRecord>> res = new AddGoodsAndCount(rackId).showAndWait();
 
         if (!res.isPresent()) {
             return;
         } else {
-            goodId = res.get().getValue().getGoodID();
+            goodId = res.get().getValue().goodIdProperty().getValue();
             count = res.get().getKey();
         }
 
@@ -406,7 +407,7 @@ public class StoreController implements Initializable {
         int goodId;
         int count;
 
-        Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackId, false).showAndWait();
+        Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackId).showAndWait();
         if (!res.isPresent()) {
             return;
         } else {
@@ -428,7 +429,7 @@ public class StoreController implements Initializable {
                 return;
             }
 
-            Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackFromId, false).showAndWait();
+            Optional<Pair<Integer, GoodInRack>> res = new AskForGoodsAndCount(rackFromId).showAndWait();
             if (!res.isPresent()) {
                 return;
             } else {
